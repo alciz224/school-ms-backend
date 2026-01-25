@@ -1,0 +1,77 @@
+✅ MODULE ACCOUNTS - 100% COMPLET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 Structure finale:
+domain/accounts/
+├── __init__.py
+├── admin.py                 ✅ Admin amélioré
+├── apps.py
+├── backends.py              ✅ Auth email/phone
+├── constants.py             ✅ Enums, questions
+├── exceptions.py            ✅ 20+ exceptions
+├── managers.py              ✅ CustomUserManager
+├── signals.py               ✅ Signaux
+├── validators.py            ✅ Phone, password
+│
+├── models/
+│   ├── __init__.py
+│   ├── user.py              ✅ CustomUser
+│   ├── security.py          ✅ SecurityQuestion
+│   ├── verification.py      ✅ VerificationCode
+│   └── history.py           ✅ PhoneHistory, LoginAttempt
+│
+├── services/
+│   ├── __init__.py
+│   ├── auth.py              ✅ Register, Login, Logout
+│   ├── verification.py      ✅ Send, Confirm
+│   ├── password.py          ✅ Reset, Change
+│   ├── security.py          ✅ Questions, Score
+│   └── notifications/
+│       ├── base.py          ✅ Interface
+│       ├── email.py         ✅ Email service
+│       ├── sms.py           ✅ SMS préparé
+│       └── console.py       ✅ Dev service
+│
+├── api/
+│   ├── __init__.py
+│   ├── exceptions.py        ✅ Handler personnalisé
+│   ├── permissions.py       ✅ IsVerified, etc.
+│   ├── throttling.py        ✅ Rate limiters
+│   ├── urls.py              ✅ 18 endpoints
+│   ├── serializers/         ✅ Tous les serializers
+│   └── views/               ✅ Toutes les views
+│
+└── tests/
+    ├── __init__.py
+    ├── conftest.py          ✅ Fixtures
+    ├── test_models.py       ✅ 25+ tests
+    ├── test_services.py     ✅ 20+ tests
+    ├── test_api_auth.py     ✅ 15+ tests
+    └── test_api_user.py     ✅ 10+ tests
+
+📡 API Endpoints:
+   POST   /api/v1/auth/register/
+   POST   /api/v1/auth/login/
+   POST   /api/v1/auth/logout/
+   POST   /api/v1/auth/token/refresh/
+   GET    /api/v1/auth/me/
+   PATCH  /api/v1/auth/me/
+   POST   /api/v1/auth/me/email/
+   POST   /api/v1/auth/me/phone/
+   POST   /api/v1/auth/verify/send/
+   POST   /api/v1/auth/verify/confirm/
+   GET    /api/v1/auth/verify/status/
+   POST   /api/v1/auth/password/reset/
+   POST   /api/v1/auth/password/reset/confirm/
+   POST   /api/v1/auth/password/change/
+   GET    /api/v1/auth/security/questions/
+   GET    /api/v1/auth/security/questions/mine/
+   POST   /api/v1/auth/security/questions/setup/
+   POST   /api/v1/auth/security/questions/verify/
+
+📚 Documentation:
+   /api/docs/    → Swagger UI
+   /api/redoc/   → ReDoc
+   /api/schema/  → OpenAPI JSON
+
+🧪 Tests: 80+ tests passants+
