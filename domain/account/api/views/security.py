@@ -1,5 +1,7 @@
 """
 Security question views.
+
+API Contract: See API_ENDPOINTS.md section 6
 """
 
 from rest_framework import status
@@ -15,38 +17,21 @@ from ..serializers import (
 from ..throttling import SecurityQuestionsRateThrottle
 from domain.account.services import SecurityService
 from domain.account.models import SecurityQuestion
+from domain.account.selectors import SecurityQuestionSelector
 
 
-class SecurityQuestionsListView(BaseAPIView):
-    """List user's security questions."""
-
-    permission_classes = [IsAuthenticated]
-
-    @extend_schema(
-        tags=["Security"],
-        summary="Get user's security questions",
-    )
-    def get(self, request):
-        security_service = SecurityService()
-        result = security_service.get_user_questions(request.user)
-
-        return self.success_response(
-            data={
-                "questions": result.questions,
-                "count": result.configured_count,
-                "max_questions": 3,
-            }
-        )
-
-
-class SecurityQuestionsConfigView(BaseAPIView):
-    """Get security questions configuration and predefined questions."""
+class PredefinedQuestionsView(BaseAPIView):
+    """
+    Get list of predefined security questions.
+    
+    GET /api/auth/security-questions/
+    """
 
     permission_classes = [AllowAny]
 
     @extend_schema(
-        tags=["Security"],
-        summary="Get security questions configuration",
+        tags=["Security Questions"],
+        summary="Get predefined security questions",
     )
     def get(self, request):
         security_service = SecurityService()
@@ -62,13 +47,42 @@ class SecurityQuestionsConfigView(BaseAPIView):
         )
 
 
-class SecurityQuestionsSetupView(BaseAPIView):
-    """Setup security questions."""
+class UserSecurityQuestionsView(BaseAPIView):
+    """
+    Get user's configured security questions (without answers).
+    
+    GET /api/auth/security-questions/mine/
+    """
 
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["Security"],
+        tags=["Security Questions"],
+        summary="Get user's security questions",
+    )
+    def get(self, request):
+        security_service = SecurityService()
+        result = security_service.get_user_questions(request.user)
+
+        return self.success_response(
+            data={
+                "configured_count": result.configured_count,
+                "questions": result.questions,
+            }
+        )
+
+
+class SecurityQuestionsSetupView(BaseAPIView):
+    """
+    Configure user's security questions.
+    
+    POST /api/auth/security-questions/setup/
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=["Security Questions"],
         summary="Setup security questions",
         request=SecurityQuestionsSetupSerializer,
     )
@@ -85,29 +99,35 @@ class SecurityQuestionsSetupView(BaseAPIView):
         return self.success_response(
             data={
                 "configured_count": result.configured_count,
-                "security_score": result.security_score,
-                "security_level": result.security_level,
+                "security": {
+                    "score": result.security_score,
+                    "level": result.security_level,
+                },
             },
-            message="Security questions saved successfully.",
-            status=status.HTTP_201_CREATED,
+            message="Questions de sécurité configurées",
+            status=status.HTTP_200_OK,
         )
 
 
 class SecurityQuestionDeleteView(BaseAPIView):
-    """Delete a security question."""
+    """
+    Delete a security question.
+    
+    DELETE /api/auth/security-questions/<order>/
+    """
 
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["Security"],
+        tags=["Security Questions"],
         summary="Delete a security question",
     )
     def delete(self, request, order):
-        deleted, _ = SecurityQuestion.objects.filter(
+        question = SecurityQuestionSelector.for_user_by_order(
             user=request.user, order=order
-        ).delete()
-
-        if deleted:
+        )
+        if question:
+            question.delete()
             return self.success_response(message="Security question deleted.")
 
         return self.error_response(
@@ -118,13 +138,17 @@ class SecurityQuestionDeleteView(BaseAPIView):
 
 
 class SecurityQuestionsVerifyView(BaseAPIView):
-    """Verify security question answers (for account recovery)."""
+    """
+    Verify security question answers (for account recovery).
+    
+    POST /api/auth/security-questions/verify/
+    """
 
     permission_classes = [AllowAny]
     throttle_classes = [SecurityQuestionsRateThrottle]
 
     @extend_schema(
-        tags=["Security"],
+        tags=["Security Questions"],
         summary="Verify security question answers",
         request=SecurityQuestionsVerifySerializer,
     )

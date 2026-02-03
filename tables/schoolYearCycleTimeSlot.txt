@@ -1,0 +1,114 @@
+SchoolYearCycleTimeSlot
+
+Rôle métier
+
+Représente un créneau horaire officiel applicable à un cycle précis, pour une année scolaire donnée.
+
+C’est la base temporelle utilisée par :
+
+Schedule (emploi du temps)
+
+Calcul de charge horaire enseignant
+
+Présences / absences
+
+
+⚠️ Les créneaux sont définis par cycle, car les rythmes diffèrent (Primaire ≠ Lycée).
+
+
+---
+
+Champs
+
+id
+
+school_year_cycle_id (FK → SchoolYearCycle)
+
+name (ex: "1ère heure", "2ème heure")
+
+order (int)
+
+start_time (time)
+
+end_time (time)
+
+duration_minutes
+
+status (enum)
+
+created_at, updated_at
+
+created_by, updated_by
+
+is_deleted, deleted_at, deleted_by
+
+
+
+---
+
+Status
+
+ACTIVE → utilisable dans les emplois du temps
+
+INACTIVE → conservé pour historique mais non assignable
+
+
+
+---
+
+Contraintes
+
+Unicité
+
+(school_year_cycle_id, order) UNIQUE
+
+(school_year_cycle_id, name) UNIQUE
+
+
+Contraintes horaires
+
+start_time < end_time
+
+Aucun chevauchement de créneaux pour un même school_year_cycle_id
+
+
+
+---
+
+Règles métier
+
+Un Schedule doit référencer un SchoolYearCycleTimeSlot ACTIVE
+
+Les créneaux ne sont jamais modifiés après usage
+
+Toute modification = nouveau créneau
+
+
+
+---
+
+Exclusions
+
+Pas de jour de la semaine
+
+Pas de salle
+
+Pas de pause (peut être ajouté plus tard)
+
+
+
+---
+
+Dépendances
+
+Dépend de : SchoolYearCycle
+
+Utilisé par : Schedule, Attendance, Teacher workload
+
+
+
+---
+
+Validation
+
+✅ Structure stable ✅ Historique protégé ✅ Compatible multi-cycles

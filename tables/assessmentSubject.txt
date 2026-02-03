@@ -1,0 +1,122 @@
+AssessmentSubject
+
+Rôle métier
+
+Représente une épreuve concrète d’une matière donnée, pour une classe précise, dans le cadre d’une Assessment.
+
+C’est l’unité réelle sur laquelle :
+
+les élèves composent
+
+les notes sont saisies
+
+les bulletins sont calculés
+
+
+
+---
+
+Champs
+
+id
+
+assessment_id (FK → Assessment)
+
+school_year_level_subject_id (FK → SchoolYearLevelSubject)
+
+classroom_id (FK → Classroom)
+
+teacher_assignment_id (FK → TeacherAssignment)
+
+name (ex: "Français – Composition T1")
+
+exam_date (date)
+
+max_score (ex: 20)
+
+coefficient (hérité par défaut du SchoolYearLevelSubject, surcharge possible)
+
+status (enum)
+
+created_at, updated_at
+
+created_by, updated_by
+
+is_deleted, deleted_at, deleted_by
+
+
+
+---
+
+Status
+
+DRAFT → créée mais non encore publiée
+
+PUBLISHED → visible, saisie des notes autorisée
+
+CLOSED → notes verrouillées
+
+ARCHIVED → conservée pour historique
+
+
+
+---
+
+Contraintes
+
+Cohérence structurelle
+
+classroom_id doit appartenir au même SchoolYearLevel que school_year_level_subject_id
+
+teacher_assignment_id doit :
+
+être ACTIVE
+
+correspondre à la matière
+
+correspondre à la classe
+
+
+
+Unicité
+
+(assessment_id, classroom_id, school_year_level_subject_id) UNIQUE
+
+
+
+---
+
+Règles métier
+
+Une AssessmentSubject ne peut exister que si l’Assessment est ACTIVE
+
+Une seule épreuve par matière et par classe pour une Assessment donnée
+
+Le professeur peut être remplacé via TeacherAssignment sans toucher à l’historique
+
+La fermeture (CLOSED) interdit toute modification de note
+
+
+
+---
+
+Ce qu’on ne met PAS ici
+
+❌ Élèves ❌ Notes ❌ Moyennes ❌ Décisions pédagogiques
+
+
+---
+
+Dépendances
+
+Dépend de : Assessment, SchoolYearLevelSubject, Classroom, TeacherAssignment
+
+Utilisée par : StudentAssessment
+
+
+
+---
+
+Validation
+
+✅ Séparation cadre / exécution respectée ✅ Compatible remplacement de professeur ✅ Prête pour bulletins

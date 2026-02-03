@@ -1,5 +1,7 @@
 """
 Views for the accounts API.
+
+API Contract: See API_ENDPOINTS.md for full specification.
 """
 
 from .auth import (
@@ -8,14 +10,21 @@ from .auth import (
     LogoutView,
     TokenRefreshView,
 )
+from .auth_v2 import (
+    SessionRegisterView,
+    SessionLoginView,
+    SessionLogoutView,
+    SessionStatusView,
+    CSRFTokenView,
+)
 from .user import (
     MeView,
     UpdateEmailView,
     UpdatePhoneView,
 )
 from .verification import (
-    RequestVerificationView,
-    VerifyCodeView,
+    SendVerificationCodeView,
+    ConfirmVerificationCodeView,
     VerificationStatusView,
 )
 from .password import (
@@ -25,8 +34,8 @@ from .password import (
     PasswordStrengthView,
 )
 from .security import (
-    SecurityQuestionsListView,
-    SecurityQuestionsConfigView,
+    PredefinedQuestionsView,
+    UserSecurityQuestionsView,
     SecurityQuestionsSetupView,
     SecurityQuestionDeleteView,
     SecurityQuestionsVerifyView,
@@ -38,22 +47,28 @@ __all__ = [
     "LoginView",
     "LogoutView",
     "TokenRefreshView",
+    # Auth V2 - Session
+    "SessionRegisterView",
+    "SessionLoginView",
+    "SessionLogoutView",
+    "SessionStatusView",
+    "CSRFTokenView",
     # User
     "MeView",
     "UpdateEmailView",
     "UpdatePhoneView",
     # Verification
-    "RequestVerificationView",
-    "VerifyCodeView",
+    "SendVerificationCodeView",
+    "ConfirmVerificationCodeView",
     "VerificationStatusView",
     # Password
     "PasswordResetRequestView",
     "PasswordResetConfirmView",
     "PasswordChangeView",
     "PasswordStrengthView",
-    # Security
-    "SecurityQuestionsListView",
-    "SecurityQuestionsConfigView",
+    # Security Questions
+    "PredefinedQuestionsView",
+    "UserSecurityQuestionsView",
     "SecurityQuestionsSetupView",
     "SecurityQuestionDeleteView",
     "SecurityQuestionsVerifyView",

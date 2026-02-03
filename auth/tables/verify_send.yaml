@@ -1,0 +1,32 @@
+Description: Envoyer un code de vérification
+Auth Required: Oui
+Rate Limit: 3/minute, 5/jour
+
+Request:
+  Headers:
+    Authorization: Bearer <access_token>
+  Body:
+    type: "email | phone" # Quel contact vérifier
+
+Response Success (200): { "success": true, "message": "Code envoyé", "data": {
+        "sent_to": "user@example.com", # Ou numéro masqué
+        "masked": "u***@example.com",
+        "expires_in": 600, # Secondes
+        "can_resend_in": 60, # Cooldown en secondes
+        # DEV ONLY (si SMS_SHOW_CODE_IN_RESPONSE=True)
+        "dev_code": "123456",
+      } }
+
+Response Error (400):
+  {
+    "success": false,
+    "message": "Aucun email configuré",
+    "error": { "code": "VERIFY_NO_CONTACT", "details": null },
+  }
+
+Response Error (429):
+  {
+    "success": false,
+    "message": "Veuillez attendre avant de renvoyer",
+    "error": { "code": "VERIFY_COOLDOWN", "details": { "retry_after": 45 } },
+  }

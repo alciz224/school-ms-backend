@@ -1,0 +1,127 @@
+Étape 1 – Table : AcademicYear
+
+
+---
+
+1. Rôle métier
+
+AcademicYear représente l’année académique de référence.
+
+Elle sert à :
+
+nommer les années (ex. 2024–2025)
+
+structurer les années scolaires (SchoolYear)
+
+garantir la cohérence temporelle globale du système
+
+
+⚠️ Elle ne dépend d’aucune école.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+code	string	oui	Code court (ex. 2024-2025)
+start_year	int	oui	Année de début (ex. 2024)
+end_year	int	oui	Année de fin (ex. 2025)
+is_current	boolean	oui	Année académique en cours
+status	enum	oui	DRAFT / ACTIVE / ARCHIVED
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → User	non	Audit
+updated_by	FK → User	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → User	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+code UNIQUE
+
+(start_year, end_year) UNIQUE
+
+
+Contraintes logiques
+
+end_year = start_year + 1
+
+une seule AcademicYear peut avoir is_current = true
+
+
+
+---
+
+4. Logiques métier (règles)
+
+Une année académique ne peut pas être supprimée physiquement
+
+Une année ARCHIVED :
+
+ne peut plus être modifiée
+
+ne peut pas être définie comme is_current
+
+
+Passer une année en is_current = true :
+
+force toutes les autres à false
+
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans AcademicYear
+
+❌ Dates exactes (mois, jours) ❌ Référence à une école ❌ Périodes pédagogiques (Term) ❌ Logique d’inscription ou de classe
+
+
+---
+
+6. Dépendances
+
+Utilisée par : SchoolYear
+
+Ne dépend d’aucune autre table métier
+
+
+
+---
+
+7. Validation Étape 0
+
+✅ Pas de redondance ✅ Conforme aux règles globales ✅ Table MASTER stable
+
+
+---
+
+Table AcademicYear validée.
+
+Parfait 👍
+Nous venons de traiter entièrement AcademicYear en respectant strictement la méthode définie.
+
+👉 Résultat :
+
+rôle métier clair
+
+champs minimaux et suffisants
+
+contraintes fortes (unicité, année courante)
+
+aucune pollution logique
+
+table MASTER validée
+
+
+📌 À partir de maintenant, toutes les autres tables s’aligneront sur AcademicYear pour la gestion du temps.

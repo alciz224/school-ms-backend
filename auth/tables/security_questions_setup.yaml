@@ -1,0 +1,21 @@
+# POST
+Description: Configurer ses questions de sécurité
+Auth Required: Oui
+
+Request:
+  Body:
+    questions:
+      - question: string
+        answer: string
+      - question: string
+        answer: string
+      - question: string # Optionnel (3ème)
+        answer: string
+
+Response Success (200):
+  {
+    "success": true,
+    "message": "Questions de sécurité configurées",
+    "data":
+      { "configured_count": 3, "security": { "score": 85, "level": "high" } },
+  }

@@ -1,0 +1,108 @@
+Domain Model Integrity and Relationship Analysis
+
+Scope
+- Evaluate current domain apps (geography, academic, account) for model integrity, relationships, constraints, and readiness for portals.
+- Identify gaps and propose a phased plan.
+
+Findings by Domain
+
+1) Geography (reference data)
+- Integrity: Strong. Uses GeographyBaseModel with soft delete awareness. Conditional unique constraints correctly prevent duplicates among non-deleted records.
+- Relationships: Parent-child rules enforced in AdministrativeUnit.clean(); on_delete=PROTECT preserves referential integrity.
+- Suggestions:
+  - Add composite indexes to improve queries commonly used by APIs/admin:
+    * AdministrativeUnit: (region, type), (region, code), (region, name)
+    * Locality: (administrative_unit, code), (administrative_unit, name)
+
+2) Academic (global academic references)
+- Current patterns:
+  - Soft delete/audit fields are implemented per model (not via shared AuditModel), leading to duplication.
+  - Many uniqueness constraints are NOT conditioned on soft delete; this can block re-creating logically deleted records.
+- Entity specifics:
+  - AcademicYear
+    * Uniqueness: code and (start_year, end_year) are unique. Consider making uniqueness conditional on is_deleted=False if you want to allow re-creation post soft-delete.
+    * Indexing: Add db_index to status, is_current, start_year for frequent filtering/sorting.
+  - Cycle
+    * Uniqueness on code/name: make conditional on is_deleted=False.
+    * Indexes: db_index on code, name; optional composite (has_track, code).
+  - Track
+    * Uniqueness on (cycle, code) and (cycle, name): make conditional on is_deleted=False.
+    * Indexes: (cycle, code), (cycle, name).
+  - Level
+    * Uniqueness on (cycle, code) and (cycle, name): make conditional on is_deleted=False.
+    * Indexes: (cycle, order), (cycle, track), (cycle, code).
+  - Subject, AssessmentType
+    * Global unique code/name: make conditional on is_deleted=False.
+    * Indexes: db_index for code, name.
+  - TermType
+    * Global unique code/name: make conditional on is_deleted=False.
+    * DB CheckConstraint: period_count > 0.
+    * Indexes: db_index for code, name.
+  - Term
+    * Uniqueness on (term_type, code) and (term_type, order): make conditional on is_deleted=False.
+    * DB CheckConstraints: order > 0.
+    * Indexes: (term_type, order), (term_type, code).
+- Consistency:
+  - Consider refactoring to use shared AuditModel for uniform soft-delete/audit behavior (plan carefully; requires migrations).
+
+3) Account (users, security, verification)
+- Integrity: Solid. No soft delete on core identity objects (appropriate).
+- Relationships: SecurityQuestion/Attempt, LoginAttempt, PhoneHistory correctly reference users; indexing and constraints are appropriate.
+- Suggestions: None required at model level. Selectors added for query consistency.
+
+Cross-Domain Gap for Portals
+- Operational entities missing for school operations. Proposed new domain (e.g., domain/school or domain/ops):
+  - Core
+    * School (FK to geography, e.g., Locality/AdministrativeUnit)
+    * SchoolYear (FK School, FK AcademicYear, FK TermType)
+    * SchoolYearCycle (FK SchoolYear, FK Cycle)
+    * SchoolYearLevel (FK SchoolYearCycle, FK Level)
+    * SchoolYearSubject (FK SchoolYearLevel, FK Subject)
+  - People/Assignments
+    * TeacherAssignment (FK SchoolYearSubject, FK User[teacher], date range)
+    * StudentEnrollment (FK SchoolYearLevel, FK User[student], status/dates)
+  - Assessment
+    * Assessment (FK SchoolYearSubject, FK AssessmentType, term, weight)
+    * StudentAssessment (FK Assessment, FK student, score/status)
+  - Scheduling
+    * TimeSlot, Schedule (per level/class)
+
+Prioritized Recommendations
+
+Phase 1: Low-risk indexes + DB checks (implement now)
+- Add indexes:
+  * AcademicYear: is_current, status, start_year, (start_year, end_year)
+  * Cycle: code, name
+  * Track: (cycle, code), (cycle, name)
+  * Level: (cycle, order), (cycle, track), (cycle, code)
+  * Subject: code, name
+  * TermType: code, name
+  * Term: (term_type, order), (term_type, code)
+- Add DB-level CheckConstraints:
+  * TermType: period_count > 0
+  * Term: order > 0
+
+Phase 2: Soft-delete aware uniqueness (plan migrations)
+- Convert unique constraints to conditional (is_deleted=False):
+  * Cycle: code, name
+  * Track: (cycle, code), (cycle, name)
+  * Level: (cycle, code), (cycle, name)
+  * Subject: code, name
+  * AssessmentType: code, name
+  * TermType: code, name
+  * Term: (term_type, code), (term_type, order)
+- Decide if AcademicYear.code remains globally unique or becomes conditional.
+
+Phase 3: Unify soft-delete/auditing (optional, breaking)
+- Migrate academic models to inherit from shared AuditModel for consistency and less duplication.
+- Requires careful migration and regression testing.
+
+Phase 4: School Operations Domain (new)
+- Draft ERD and model stubs for School, SchoolYear*, Assignments, Enrollment, Assessment, Schedule.
+- Use on_delete=PROTECT for historical integrity.
+- Add services/selectors from the start.
+
+Next Actions (suggested)
+1) Implement Phase 1 as a non-breaking migration set.
+2) Draft migration plan for Phase 2 with backward compatibility notes.
+3) Produce ERD and initial model stubs for School Operations domain.

@@ -1,0 +1,154 @@
+ReportCard (Bulletin)
+
+Rôle métier
+
+Représente le bulletin officiel d’un élève pour une période donnée, dans une année scolaire précise.
+
+Le bulletin est une vue de synthèse figée, calculée à partir des StudentAssessment VALIDATED`.
+
+⚠️ Aucune note n’est saisie ici manuellement.
+
+
+---
+
+Dépendance hiérarchique (très important)
+
+StudentAssessment
+   ↓ (agrégation)
+ReportCard
+
+Le bulletin n’existe que si :
+
+les évaluations sont CLOSED
+
+les notes sont VALIDATED
+
+
+
+---
+
+Champs
+
+id
+
+student_enrollment_id (FK → StudentEnrollment)
+
+school_year_cycle_term_id (FK → SchoolYearCycleTerm)
+
+school_year_id (FK → SchoolYear)
+
+average_score (decimal)
+
+rank (int, nullable)
+
+decision (enum)
+
+status (enum)
+
+generated_at (datetime)
+
+locked_at (datetime, nullable)
+
+created_at, updated_at
+
+created_by, updated_by
+
+
+
+---
+
+Status
+
+DRAFT → calcul provisoire
+
+FINAL → bulletin officiel
+
+LOCKED → figé, non modifiable
+
+
+
+---
+
+Décisions (decision)
+
+PASS
+
+FAIL
+
+REPEAT
+
+TRANSFER
+
+PENDING
+
+
+
+---
+
+Contraintes
+
+Unicité
+
+(student_enrollment_id, school_year_cycle_term_id) UNIQUE
+
+
+Cohérence
+
+L’élève doit être ACTIF durant la période
+
+Toutes les Assessment du cycle doivent être CLOSED
+
+
+
+---
+
+Logiques métier
+
+Moyennes calculées via :
+
+normalized_score
+
+coefficients (SchoolYearLevelSubject)
+
+
+Les absences non justifiées pénalisent la moyenne (règle paramétrable)
+
+Le rang est calculé par classe
+
+
+
+---
+
+Règles de gel
+
+Une fois LOCKED :
+
+aucune modification possible
+
+toute correction passe par annulation + nouveau bulletin
+
+
+
+
+---
+
+Ce qu’on ne met PAS ici
+
+❌ Notes détaillées ❌ Coefficients ❌ Professeurs
+
+
+---
+
+Dépendances
+
+Dépend de : StudentAssessment, StudentEnrollment, SchoolYearCycleTerm
+
+Utilisée par : Transcript, Promotion, Statistics
+
+
+
+---
+
+Validation
+
+✅ Hiérarchie respectée ✅ Source unique de vérité ✅ Compatible audits et ministères

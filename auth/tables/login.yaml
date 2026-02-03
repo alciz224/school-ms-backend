@@ -1,0 +1,77 @@
+Description: Connexion utilisateur
+Auth Required: Non
+Rate Limit: 5/minute par IP
+
+Request:
+  Content-Type: application/json
+  Body:
+    identifier: string # Email OU téléphone
+    password: string
+
+Response Success (200):
+  {
+    "success": true,
+    "message": "Connexion réussie",
+    "data":
+      {
+        "user":
+          {
+            "id": "uuid",
+            "email": "user@example.com",
+            "phone": "+224620123456",
+            "first_name": "Mamadou",
+            "last_name": "Diallo",
+            "full_name": "Mamadou Diallo",
+            "is_verified": true,
+            "verified_at": "2024-01-15T10:30:00Z",
+            "security":
+              {
+                "score": 75,
+                "level": "high",
+                "has_security_questions": true,
+                "has_backup_phone": true,
+              },
+            "profiles":
+              {
+                "has_student": true,
+                "has_teacher": false,
+                "has_school_admin": false,
+              },
+          },
+        "tokens": { "access": "eyJ...", "refresh": "eyJ..." },
+        "requires_verification": false,
+      },
+  }
+
+Response Error - Non vérifié (200):
+  # Connexion réussie mais compte non vérifié
+  {
+    "success": true,
+    "message": "Vérification requise",
+    "data":
+      {
+        "user": { ... },
+        "tokens": { ... },
+        "requires_verification": true,
+        "verification_options": ["email", "phone"],
+      },
+  }
+
+Response Error (401):
+  {
+    "success": false,
+    "message": "Identifiants incorrects",
+    "error": { "code": "AUTH_INVALID_CREDENTIALS", "details": null },
+  }
+
+Response Error - Locked (423):
+  {
+    "success": false,
+    "message": "Compte temporairement verrouillé",
+    "error":
+      {
+        "code": "AUTH_ACCOUNT_LOCKED",
+        "details":
+          { "locked_until": "2024-01-15T11:00:00Z", "remaining_minutes": 25 },
+      },
+  }

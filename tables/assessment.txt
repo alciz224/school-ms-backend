@@ -1,0 +1,117 @@
+Assessment
+
+Rôle métier
+
+Représente une évaluation officielle planifiée pour un cycle, une année scolaire, et une période donnée.
+
+Une Assessment définit :
+
+le cadre temporel de l’évaluation
+
+son type pédagogique
+
+son champ d’application (cycle)
+
+
+⚠️ Elle ne concerne pas encore une matière ni une classe.
+
+
+---
+
+Champs
+
+id
+
+school_year_id (FK → SchoolYear)
+
+school_year_cycle_id (FK → SchoolYearCycle)
+
+school_year_cycle_term_id (FK → SchoolYearCycleTerm)
+
+assessment_type_id (FK → AssessmentType)
+
+name (ex: "Composition du Trimestre 1")
+
+start_date
+
+end_date
+
+status (enum)
+
+created_at, updated_at
+
+created_by, updated_by
+
+is_deleted, deleted_at, deleted_by
+
+
+
+---
+
+Status
+
+DRAFT → en préparation
+
+ACTIVE → officiellement lancé
+
+CLOSED → terminé, plus aucune modification
+
+ARCHIVED → conservé pour historique
+
+
+
+---
+
+Contraintes
+
+Cohérence structurelle
+
+school_year_cycle_term_id doit appartenir au school_year_cycle_id
+
+assessment_type_id doit être compatible avec le cycle
+
+start_date <= end_date
+
+
+Unicité
+
+(school_year_cycle_id, assessment_type_id, school_year_cycle_term_id) UNIQUE
+
+
+
+---
+
+Règles métier
+
+Une Assessment est toujours limitée à un cycle
+
+Une période (SchoolYearCycleTerm) ne peut avoir qu’une seule Assessment par type
+
+Une Assessment ACTIVE permet la création d’épreuves
+
+Une Assessment CLOSED interdit toute nouvelle note
+
+
+
+---
+
+Ce qu’on ne met PAS ici
+
+❌ Matières ❌ Classes ❌ Notes ❌ Élèves
+
+
+---
+
+Dépendances
+
+Dépend de : SchoolYear, SchoolYearCycle, SchoolYearCycleTerm, AssessmentType
+
+Utilisée par : Exam / AssessmentSubject
+
+
+
+---
+
+Validation Étape 4
+
+✅ Alignée avec les périodes ✅ Compatible multi-écoles ✅ Séparation claire cadre / exécution

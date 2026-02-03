@@ -1,0 +1,260 @@
+
+---
+
+# 🎭 Les grands types de portails
+
+Dans ton système, on a **6 profils principaux** (certains peuvent se chevaucher techniquement, mais les besoins restent distincts) :
+
+1. **Administrateur / Direction**
+2. **Scolarité / Administration académique**
+3. **Enseignant**
+4. **Élève**
+5. **Parent / Tuteur**
+6. **Super Admin / Éditeur système** (optionnel mais recommandé)
+
+---
+
+## 1️⃣ Portail **Administrateur / Direction**
+
+👉 Objectif : **piloter l’établissement**
+
+### 📊 Pilotage & vision globale
+
+* Tableau de bord :
+
+  * effectifs par niveau / classe
+  * taux d’inscription / réinscription
+  * enseignants actifs
+  * matières non affectées
+* Suivi de l’année scolaire :
+
+  * année courante
+  * périodes (termes) ouvertes / fermées
+  * état des validations (notes, bulletins)
+
+### 🏫 Structure de l’école
+
+* Création / gestion :
+
+  * niveaux, filières (tracks)
+  * classes
+  * matières
+* Affectation :
+
+  * enseignants → matières → classes
+* Coefficients par matière selon niveau / filière
+
+### 📈 Résultats & décisions
+
+* Consultation :
+
+  * moyennes par classe
+  * classement
+  * taux de réussite / redoublement
+* Export :
+
+  * bulletins
+  * statistiques officielles (ministère)
+
+### 🔒 Gouvernance
+
+* Ouverture / fermeture :
+
+  * saisie des notes
+  * périodes académiques
+* Validation finale :
+
+  * bulletins
+  * décisions de passage / redoublement
+
+---
+
+## 2️⃣ Portail **Scolarité / Administration académique**
+
+👉 Objectif : **faire tourner la machine au quotidien**
+
+### 🧾 Inscriptions & dossiers
+
+* Gestion des :
+
+  * pré-inscriptions
+  * validations administratives
+  * réinscriptions
+* Affectation des élèves aux classes
+* Gestion des doublons / erreurs
+
+### 📚 Gestion académique
+
+* Calendrier académique :
+
+  * périodes
+  * examens
+* Création :
+
+  * évaluations
+  * types d’évaluations (internes / académiques)
+
+### 📝 Notes & contrôles
+
+* Suivi de la saisie des notes
+* Vérification :
+
+  * notes manquantes
+  * incohérences
+* Relances enseignants
+
+### 📄 Documents officiels
+
+* Génération :
+
+  * listes de classe
+  * relevés
+  * attestations
+* Archivage par année scolaire
+
+---
+
+## 3️⃣ Portail **Enseignant**
+
+👉 Objectif : **enseigner, évaluer, suivre**
+
+### 📘 Cours & classes
+
+* Voir :
+
+  * ses classes
+  * ses matières
+  * ses horaires
+* Accès aux listes d’élèves par classe
+
+### 📝 Évaluations
+
+* Créer des évaluations :
+
+  * type (devoir, interrogation, examen…)
+  * période concernée
+* Paramétrage :
+
+  * barème
+  * coefficient
+  * date
+
+### ✍🏽 Saisie des notes
+
+* Saisie individuelle ou en masse
+* Brouillon / validation
+* Historique des modifications (audit)
+
+### 📊 Suivi pédagogique
+
+* Moyennes par élève
+* Statistiques simples :
+
+  * min / max
+  * taux de réussite
+* Détection des élèves en difficulté
+
+### ⚠️ Contraintes importantes
+
+* Ne voit **que ses classes**
+* Ne peut pas modifier après clôture
+* Ne peut pas enseigner dans une classe où il est élève
+
+---
+
+## 4️⃣ Portail **Élève**
+
+👉 Objectif : **consulter, comprendre, progresser**
+
+### 👤 Profil
+
+* Informations personnelles
+* Classe actuelle
+* Historique académique (années précédentes)
+
+### 📅 Vie scolaire
+
+* Emploi du temps
+* Calendrier des évaluations
+* Absences / retards (si prévu plus tard)
+
+### 📊 Résultats
+
+* Notes par matière
+* Moyennes :
+
+  * par période
+  * annuelle
+* Bulletins téléchargeables
+
+### 🔍 Transparence
+
+* Détail des évaluations
+* Statut des notes (provisoire / validée)
+
+---
+
+## 5️⃣ Portail **Parent / Tuteur**
+
+👉 Objectif : **suivre sans interférer**
+
+### 👨‍👩‍👧 Enfants liés
+
+* Voir tous les enfants rattachés
+* Changement d’enfant actif
+
+### 📊 Suivi académique
+
+* Notes et moyennes
+* Bulletins
+* Historique scolaire
+
+### 📅 Organisation
+
+* Emploi du temps
+* Calendrier des évaluations
+
+### 🔔 Alertes (plus tard)
+
+* Baisse de résultats
+* Notes manquantes
+* Décisions académiques
+
+⚠️ **Aucune action pédagogique**
+
+> consultation uniquement
+
+---
+
+## 6️⃣ Portail **Super Admin / Éditeur système**
+
+👉 Objectif : **configurer sans dépendre d’une école**
+
+### 🧠 Référentiels globaux
+
+* Types de périodes (TermType)
+* Types d’évaluations standards
+* Règles ministérielles
+
+### 🏫 Multi-établissements
+
+* Création d’écoles
+* Activation / désactivation
+* Paramètres par école
+
+### 🔐 Sécurité & audit
+
+* Logs globaux
+* Accès aux historiques
+* Restauration logique (soft delete)
+
+---
+
+## 🧩 Points clés à retenir
+
+* **Un portail = un besoin métier clair**
+* Les rôles peuvent se cumuler techniquement, mais **jamais les responsabilités**
+* Ton modèle actuel **supporte déjà très bien** cette séparation (bon design 👌)
+
+---
+

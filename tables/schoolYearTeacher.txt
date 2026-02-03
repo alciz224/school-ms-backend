@@ -1,0 +1,131 @@
+Étape 3 – Table : SchoolYearTeacher
+
+
+---
+
+1. Rôle métier
+
+SchoolYearTeacher représente un enseignant rattaché à une école pour une année scolaire donnée.
+
+Cette table sert d’interface entre :
+
+le profil enseignant (Teacher / CustomUser)
+
+l’année scolaire (SchoolYear)
+
+
+Elle permet de :
+
+contrôler quelles personnes peuvent enseigner durant une année
+
+éviter les affectations hors année scolaire
+
+centraliser la gestion des charges pédagogiques
+
+
+⚠️ Toute affectation en classe passe obligatoirement par SchoolYearTeacher.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+school_year_id	FK → SchoolYear	oui	Année scolaire concernée
+teacher_id	FK → CustomUser (Teacher)	oui	Utilisateur ayant le rôle enseignant
+status	enum	oui	ACTIVE / SUSPENDED / LEFT
+hire_date	date	non	Date de début d’activité pour l’année
+end_date	date	non	Date de fin d’activité
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → CustomUser	non	Audit
+updated_by	FK → CustomUser	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → CustomUser	non	Soft delete
+
+
+
+---
+
+3. Statuts (status)
+
+ACTIVE :
+
+l’enseignant est autorisé à enseigner durant l’année scolaire
+
+
+SUSPENDED :
+
+l’enseignant est temporairement suspendu
+
+aucune nouvelle affectation possible
+
+
+LEFT :
+
+l’enseignant a quitté l’établissement
+
+affectations passées conservées
+
+
+
+
+---
+
+4. Contraintes
+
+Unicité
+
+(school_year_id, teacher_id) UNIQUE
+
+
+Contraintes logiques
+
+Un enseignant SUSPENDED ou LEFT ne peut pas recevoir de nouvelles affectations
+
+Les affectations existantes restent intactes pour l’historique
+
+
+
+---
+
+5. Logiques métier (règles)
+
+Sert de prérequis obligatoire à TeacherAssignment
+
+Permet de contrôler la disponibilité réelle d’un enseignant
+
+Centralise la gestion annuelle des enseignants
+
+
+
+---
+
+6. Ce qu’on ne met PAS dans SchoolYearTeacher
+
+❌ Classes ❌ Matières ❌ Emplois du temps
+
+
+---
+
+7. Dépendances
+
+Dépend de : SchoolYear, CustomUser
+
+Utilisé par : TeacherAssignment, Schedule, évaluations
+
+
+
+---
+
+8. Validation Étape 3
+
+✅ Séparation claire profil / année scolaire ✅ Sécurise les affectations pédagogiques ✅ Historique conservé
+
+
+---
+
+Table SchoolYearTeacher validée.

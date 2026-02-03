@@ -1,0 +1,109 @@
+Schedule (Emploi du temps)
+
+Rôle métier
+
+Représente l’emploi du temps officiel d’une classe, pour une année scolaire, un cycle, une période donnée, et basé uniquement sur des TeacherAssignment actifs.
+
+Le Schedule est une projection organisationnelle : il ne crée pas de pédagogie, il consomme des affectations existantes.
+
+
+---
+
+Champs principaux
+
+id
+
+school_year_id (FK → SchoolYear)
+
+school_year_cycle_id (FK → SchoolYearCycle)
+
+classroom_id (FK → Classroom)
+
+teacher_assignment_id (FK → TeacherAssignment)
+
+day_of_week (enum: MONDAY … SUNDAY)
+
+time_slot_id (FK → CycleTimeSlot)
+
+start_time
+
+end_time
+
+effective_from (date)
+
+effective_to (date, nullable)
+
+status (enum)
+
+created_at, updated_at
+
+
+
+---
+
+Status
+
+DRAFT → en cours de préparation (non visible élèves/enseignants)
+
+ACTIVE → appliqué et officiel
+
+SUSPENDED → temporairement désactivé (ex: grève, réorganisation)
+
+ARCHIVED → ancien emploi du temps conservé pour historique
+
+
+
+---
+
+Contraintes métiers
+
+Un TeacherAssignment doit être ACTIVE pour être utilisé
+
+Pas de chevauchement horaire :
+
+même classe
+
+même professeur
+
+même créneau
+
+
+Un Schedule est toujours lié à une période de validité
+
+
+
+---
+
+Règles importantes
+
+Changement de professeur → nouveau TeacherAssignment, pas modification du Schedule existant
+
+Changement d’horaire → nouveau Schedule avec nouvelle période
+
+Historique toujours conservé
+
+
+
+---
+
+Exclusions volontaires
+
+Pas de logique de présence
+
+Pas de logique de salle (optionnelle plus tard)
+
+Pas de génération automatique (service dédié ultérieur)
+
+
+
+---
+
+Dépendances futures
+
+Attendance
+
+Exam planning
+
+Teacher workload
+
+Student timetable view

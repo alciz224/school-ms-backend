@@ -16,6 +16,7 @@ from domain.shared.exceptions import (
     PermissionDeniedException,
     BusinessRuleException,
 )
+from domain.account.exceptions import AccountsException
 
 
 def custom_exception_handler(exc, context):
@@ -104,6 +105,20 @@ def custom_exception_handler(exc, context):
                 }
             },
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Handle AccountsException and its subclasses
+    if isinstance(exc, AccountsException):
+        return Response(
+            {
+                "success": False,
+                "error": {
+                    "code": exc.code,
+                    "message": exc.message,
+                    "details": exc.details,
+                }
+            },
+            status=exc.status_code,
         )
 
     # Handle Django's ValidationError

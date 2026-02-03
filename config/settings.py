@@ -20,80 +20,82 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4n_y0_@puhz(mc5ly@(2!q7bqo7eem4l-^5wkf5zdig0c*+03('
+SECRET_KEY = "django-insecure-4n_y0_@puhz(mc5ly@(2!q7bqo7eem4l-^5wkf5zdig0c*+03("
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
     # Third-party apps
-    'rest_framework',
-    'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist',
-    'django_filters',
-    'drf_spectacular',
-    
+    "corsheaders",
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
+    "django_filters",
+    "drf_spectacular",
     # Domain apps
-    'domain.shared',
-    'domain.account',
-    
+    "domain.shared",
+    "domain.account",
+    "domain.geography",
+    "domain.academic",
+    "domain.school_operations",
     # Portal apps
-    'portal.school_admin',
-    'portal.system_admin',
-    'portal.teacher',
-    'portal.student',
-    'portal.parent',
+    "portal.school_admin",
+    "portal.system_admin",
+    "portal.teacher",
+    "portal.student",
+    "portal.parent",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -103,16 +105,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -120,9 +122,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -132,54 +134,49 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Custom User Model
-AUTH_USER_MODEL = 'account.CustomUser'
+AUTH_USER_MODEL = "account.CustomUser"
 
 # Authentication Backends
 AUTHENTICATION_BACKENDS = [
-    'domain.account.backends.EmailPhoneBackend',
-    'django.contrib.auth.backends.ModelBackend',
+    "domain.account.backends.EmailPhoneBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 # Account Configuration
 ACCOUNTS_CONFIG = {
     # Phone settings
-    'DEFAULT_PHONE_REGION': 'GN',  # Guinea
-    
+    "DEFAULT_PHONE_REGION": "GN",  # Guinea
     # Verification settings
-    'VERIFICATION_CODE_EXPIRY_MINUTES': 10,
-    'VERIFICATION_MAX_ATTEMPTS': 3,
-    'VERIFICATION_COOLDOWN_SECONDS': 60,
-    'VERIFICATION_MAX_DAILY_REQUESTS': 5,
-    
+    "VERIFICATION_CODE_EXPIRY_MINUTES": 10,
+    "VERIFICATION_MAX_ATTEMPTS": 3,
+    "VERIFICATION_COOLDOWN_SECONDS": 60,
+    "VERIFICATION_MAX_DAILY_REQUESTS": 5,
     # Login security
-    'LOGIN_MAX_ATTEMPTS': 5,
-    'LOGIN_LOCKOUT_MINUTES': 30,
-    
+    "LOGIN_MAX_ATTEMPTS": 5,
+    "LOGIN_LOCKOUT_MINUTES": 30,
     # Security questions
-    'MIN_SECURITY_QUESTIONS_FOR_RECOVERY': 2,
-    'MAX_SECURITY_QUESTIONS': 3,
-    
+    "MIN_SECURITY_QUESTIONS_FOR_RECOVERY": 2,
+    "MAX_SECURITY_QUESTIONS": 3,
     # SMS settings (disabled by default)
-    'SMS_ENABLED': False,
-    'SMS_BACKEND': 'console',
-    
+    "SMS_ENABLED": False,
+    "SMS_BACKEND": "console",
     # Security score weights
-    'SECURITY_SCORE_WEIGHTS': {
-        'email_present': 10,
-        'email_verified': 15,
-        'phone_present': 10,
-        'phone_verified': 15,
-        'backup_phone': 15,
-        'security_question': 10,
-        'strong_password': 5,
+    "SECURITY_SCORE_WEIGHTS": {
+        "email_present": 10,
+        "email_verified": 15,
+        "phone_present": 10,
+        "phone_verified": 15,
+        "backup_phone": 15,
+        "security_question": 10,
+        "strong_password": 5,
     },
 }
 
@@ -190,60 +187,51 @@ ACCOUNTS_CONFIG = {
 
 REST_FRAMEWORK = {
     # Authentication
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
-    
     # Permissions
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
     ],
-    
     # Pagination
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20,
-    
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
     # Filtering
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend',
-        'rest_framework.filters.SearchFilter',
-        'rest_framework.filters.OrderingFilter',
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
     ],
-    
     # Throttling
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle',
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
     ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/hour',
-        'user': '1000/hour',
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/hour",
+        "user": "1000/hour",
     },
-    
     # Schema
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     # Renderers
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
     ],
-    
     # Parsers
-    'DEFAULT_PARSER_CLASSES': [
-        'rest_framework.parsers.JSONParser',
-        'rest_framework.parsers.FormParser',
-        'rest_framework.parsers.MultiPartParser',
+    "DEFAULT_PARSER_CLASSES": [
+        "rest_framework.parsers.JSONParser",
+        "rest_framework.parsers.FormParser",
+        "rest_framework.parsers.MultiPartParser",
     ],
-    
     # Exception handling
-    'EXCEPTION_HANDLER': 'domain.shared.api.exception_handlers.custom_exception_handler',
-    
+    "EXCEPTION_HANDLER": "domain.shared.api.exception_handlers.custom_exception_handler",
     # Date/time formats
-    'DATETIME_FORMAT': '%Y-%m-%dT%H:%M:%S%z',
-    'DATE_FORMAT': '%Y-%m-%d',
-    'TIME_FORMAT': '%H:%M:%S',
+    "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%S%z",
+    "DATE_FORMAT": "%Y-%m-%d",
+    "TIME_FORMAT": "%H:%M:%S",
 }
 
 
@@ -255,25 +243,21 @@ from datetime import timedelta
 
 SIMPLE_JWT = {
     # Token lifetimes
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-    
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
     # Algorithm
-    'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,
-    
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
     # Token types
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
-    
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
     # User settings
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
-    
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
     # Token claims
-    'TOKEN_OBTAIN_SERIALIZER': 'domain.account.api.serializers.CustomTokenObtainPairSerializer',
+    "TOKEN_OBTAIN_SERIALIZER": "domain.account.api.serializers.CustomTokenObtainPairSerializer",
 }
 
 
@@ -282,36 +266,98 @@ SIMPLE_JWT = {
 # =============================================================================
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'School Management System API',
-    'DESCRIPTION': 'API for School Management System Backend',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    
+    "TITLE": "School Management System API",
+    "DESCRIPTION": "API for School Management System Backend",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
     # Schema organization
-    'SWAGGER_UI_SETTINGS': {
-        'deepLinking': True,
-        'persistAuthorization': True,
-        'displayOperationId': False,
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": False,
     },
-    
     # Security schemes
-    'SECURITY': [{'Bearer': []}],
-    'APPEND_COMPONENTS': {
-        'securitySchemes': {
-            'Bearer': {
-                'type': 'http',
-                'scheme': 'bearer',
-                'bearerFormat': 'JWT',
+    "SECURITY": [{"Bearer": []}],
+    "APPEND_COMPONENTS": {
+        "securitySchemes": {
+            "Bearer": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
             }
         }
     },
-    
     # Tags
-    'TAGS': [
-        {'name': 'Auth', 'description': 'Authentication endpoints'},
-        {'name': 'Users', 'description': 'User management endpoints'},
-        {'name': 'Verification', 'description': 'Email/Phone verification endpoints'},
-        {'name': 'Password', 'description': 'Password management endpoints'},
-        {'name': 'Security', 'description': 'Security questions endpoints'},
+    "TAGS": [
+        {"name": "Auth", "description": "Authentication endpoints"},
+        {"name": "Users", "description": "User management endpoints"},
+        {"name": "Verification", "description": "Email/Phone verification endpoints"},
+        {"name": "Password", "description": "Password management endpoints"},
+        {"name": "Security", "description": "Security questions endpoints"},
     ],
 }
+
+
+# =============================================================================
+# SESSION CONFIGURATION
+# =============================================================================
+
+# Session backend (database-backed sessions)
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
+
+# Session cookie settings for Next.js frontend
+SESSION_COOKIE_NAME = "sessionid"
+SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_SAMESITE = "Lax"  # Cross-site request protection
+SESSION_COOKIE_DOMAIN = None  # Use default domain
+
+# Save session on every request to extend expiry
+SESSION_SAVE_EVERY_REQUEST = True
+
+# =============================================================================
+# CSRF CONFIGURATION
+# =============================================================================
+
+# CSRF cookie settings for Next.js frontend
+CSRF_COOKIE_NAME = "csrftoken"
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read for X-CSRFToken header
+CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_DOMAIN = None  # Use default domain
+
+# CSRF trusted origins (for Next.js frontend)
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+# Use X-CSRFToken header (common for SPAs)
+CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
+
+# =============================================================================
+# CORS HEADERS
+# =============================================================================
+
+# Allow requests from Next.js frontend
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+# Allow credentials (cookies, authorization headers)
+CORS_ALLOW_CREDENTIALS = True
+
+# Allowed headers
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]

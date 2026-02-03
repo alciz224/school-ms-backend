@@ -1,0 +1,11 @@
+Description: Déconnexion (blacklist le refresh token)
+Auth Required: Oui
+
+Request:
+  Headers:
+    Authorization: Bearer <access_token>
+  Body:
+    refresh: string # Refresh token à blacklister
+
+Response Success (200):
+  { "success": true, "message": "Déconnexion réussie", "data": null }

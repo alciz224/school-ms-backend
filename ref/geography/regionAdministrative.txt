@@ -1,0 +1,98 @@
+Étape 1 – Table : RegionAdministrative
+
+
+---
+
+1. Rôle métier
+
+RegionAdministrative représente une région administrative d’un pays.
+
+Il sert à :
+
+structurer les subdivisions d’un pays (ex. 8 régions de Guinée + Conakry)
+
+être référencé par AdministrativeUnit
+
+standardiser la géographie pour toutes les écoles et localités
+
+
+⚠️ RegionAdministrative est un référentiel global, indépendant des années scolaires.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+country_id	FK → Country	oui	Pays associé
+code	string	oui	Code court (ex. BOKE, CON)
+name	string	oui	Nom lisible (Boké, Conakry)
+description	text	non	Description facultative
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → User	non	Audit
+updated_by	FK → User	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → User	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+(country_id, code) UNIQUE
+
+(country_id, name) UNIQUE
+
+
+Contraintes logiques
+
+Une région ne peut pas être supprimée physiquement si des unités administratives y sont associées
+
+
+
+---
+
+4. Logiques métier (règles)
+
+RegionAdministrative est global et partagé entre écoles
+
+Toute modification doit vérifier les dépendances dans AdministrativeUnit
+
+Les régions comme Conakry ou Boké suivent la même table pour uniformité
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans RegionAdministrative
+
+❌ Années scolaires ❌ Classes ou écoles ❌ Quartiers ou sous-préfectures (gérés par AdministrativeUnit) ❌ Statut actif/inactif
+
+
+---
+
+6. Dépendances
+
+Utilisé par : AdministrativeUnit
+
+Dépend de : Country
+
+
+
+---
+
+7. Validation Étape 0
+
+✅ Table MASTER stable, abstraite et globale ✅ Conforme aux règles globales ✅ Pas de redondance ni de logique temporelle
+
+
+---
+
+Table RegionAdministrative validée.

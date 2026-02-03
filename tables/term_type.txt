@@ -1,0 +1,101 @@
+Étape 1 – Table : TermType
+
+
+---
+
+1. Rôle métier
+
+TermType définit le type de découpage pédagogique d’une année académique.
+
+Il sert à :
+
+définir comment une année est découpée (trimestres, semestres, etc.)
+
+imposer le nombre et la nature des périodes (Term)
+
+standardiser les structures pédagogiques entre écoles ou cycles
+
+
+⚠️ TermType est un référentiel abstrait, sans dates.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+code	string	oui	Code court (TRIMESTER, SEMESTER)
+name	string	oui	Nom lisible (Trimester, Semester)
+period_count	int	oui	Nombre de périodes (ex. 3, 2)
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → User	non	Audit
+updated_by	FK → User	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → User	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+code UNIQUE
+
+name UNIQUE
+
+
+Contraintes logiques
+
+period_count > 0
+
+TermType est immuable fonctionnellement une fois utilisé
+
+
+
+---
+
+4. Logiques métier (règles)
+
+TermType est global et partagé entre écoles
+
+Il ne porte aucune notion d’activation ou d’archivage
+
+Le cycle de vie (actif / inactif) est géré au niveau annuel, via SchoolYearCycleTerm
+
+Toute désactivation est contextuelle, jamais globale
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans TermType
+
+❌ Dates de début / fin ❌ Référence directe à AcademicYear ❌ Référence à une école ❌ Liste concrète des périodes
+
+
+---
+
+6. Dépendances
+
+Utilisé par : Term
+
+Référencé indirectement par : CycleAssessment, SchoolYear
+
+
+
+---
+
+7. Validation Étape 0
+
+✅ Référentiel stable ✅ Conforme aux règles globales ✅ Aucune redondance temporelle
+
+
+---
+
+Table TermType validée.

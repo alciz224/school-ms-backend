@@ -1,0 +1,97 @@
+Étape 1 – Table : Subject
+
+
+---
+
+1. Rôle métier
+
+Subject représente une matière enseignée.
+
+Il sert à :
+
+être associé à un Level ou SchoolYearLevel
+
+référencer les évaluations et l’emploi du temps
+
+standardiser les matières entre écoles et cycles
+
+
+⚠️ Subject est un référentiel global, indépendant des écoles et années scolaires.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+code	string	oui	Code court (MATH, PHYS, FRAN)
+name	string	oui	Nom lisible (Mathématiques, Physique, Français)
+description	text	non	Description facultative
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → User	non	Audit
+updated_by	FK → User	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → User	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+code UNIQUE
+
+name UNIQUE
+
+
+Contraintes logiques
+
+Une fois créée, une Subject ne doit pas être supprimée physiquement si utilisée dans des niveaux ou évaluations
+
+
+
+---
+
+4. Logiques métier (règles)
+
+Subject est global et partagé entre écoles
+
+Les matières sont liées aux niveaux et années scolaires via LevelSubject ou SchoolYearLevelSubject
+
+Aucune activation ou désactivation ici, gérée par le contexte scolaire
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans Subject
+
+❌ Référence directe à une école ou année scolaire ❌ Statut actif/inactif ❌ Professeurs ou classes ❌ Dates pédagogiques
+
+
+---
+
+6. Dépendances
+
+Utilisé par : LevelSubject, SchoolYearLevelSubject, CycleAssessment, TimetableEntry
+
+Ne dépend d’aucune table master
+
+
+
+---
+
+7. Validation Étape 0
+
+✅ Table MASTER stable, abstraite et globale ✅ Conforme aux règles globales ✅ Pas de redondance ni de logique temporelle
+
+
+---
+
+Table Subject validée.

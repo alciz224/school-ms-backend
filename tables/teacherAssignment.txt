@@ -1,0 +1,140 @@
+Étape 3 – Table : TeacherAssignment
+
+
+---
+
+1. Rôle métier
+
+TeacherAssignment représente l’affectation d’un enseignant à une matière et une classe pour une année scolaire donnée.
+
+⚠️ Important : ce n’est pas le profil ‘Teacher’ directement qui est utilisé, mais SchoolYearTeacher, afin de :
+
+gérer les enseignants par année scolaire
+
+permettre les remplacements sans casser l’historique
+
+contrôler les affectations multiples
+
+
+Cette table permet aussi de remplacer un professeur par un autre dans une classe et une matière données.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+school_year_teacher_id	FK → SchoolYearTeacher	oui	Enseignant pour l’année scolaire
+classroom_id	FK → Classroom	oui	Classe concernée
+school_year_level_subject_id	FK → SchoolYearLevelSubject	oui	Matière enseignée
+assignment_status	enum	oui	ACTIVE / REPLACED / ENDED
+start_date	date	oui	Date de début de l’affectation
+end_date	date	non	Date de fin effective
+replaced_by_id	FK → TeacherAssignment	non	Nouvelle affectation qui remplace celle-ci
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → CustomUser	non	Audit
+updated_by	FK → CustomUser	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → CustomUser	non	Soft delete
+
+
+
+---
+
+3. Statuts (assignment_status)
+
+ACTIVE :
+
+le professeur enseigne actuellement la matière dans la classe
+
+
+REPLACED :
+
+le professeur a été remplacé
+
+permet une nouvelle affectation pour la même classe + matière
+
+conserve l’historique pédagogique
+
+
+ENDED :
+
+fin normale de l’affectation (fin d’année, arrêt définitif)
+
+
+
+⚠️ Une affectation REPLACED ou ENDED ne peut plus redevenir ACTIVE.
+
+
+---
+
+4. Contraintes
+
+Unicité fonctionnelle
+
+Une seule affectation ACTIVE est autorisée pour :
+
+(classroom_id, school_year_level_subject_id)
+
+
+
+Contraintes logiques
+
+Lorsqu’un professeur est remplacé :
+
+son assignment_status passe à REPLACED
+
+end_date est renseignée
+
+une nouvelle ligne TeacherAssignment est créée pour le remplaçant
+
+
+Les évaluations passées restent liées à l’ancienne affectation
+
+
+
+---
+
+5. Logiques métier (règles)
+
+L’enseignant est affecté par matière et par classe
+
+Le remplacement ne supprime jamais l’ancienne affectation
+
+Permet l’historisation complète des enseignants par classe
+
+Compatible avec calculs d’emplois du temps et évaluations
+
+
+
+---
+
+6. Ce qu’on ne met PAS dans TeacherAssignment
+
+❌ Profil Teacher direct ❌ Année scolaire directe ❌ Notes ou évaluations
+
+
+---
+
+7. Dépendances
+
+Dépend de : SchoolYearTeacher, Classroom, SchoolYearLevelSubject
+
+Utilisé par : Schedule, CycleAssessment, Evaluation, rapports pédagogiques
+
+
+
+---
+
+8. Validation Étape 3
+
+✅ Utilisation correcte de SchoolYearTeacher ✅ Gestion propre des remplacements ✅ Historique conservé ✅ Compatible multi-professeurs / multi-classes
+
+
+---
+
+Table TeacherAssignment validée.

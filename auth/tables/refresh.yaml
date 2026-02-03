@@ -1,0 +1,19 @@
+Description: Rafraîchir le token d'accès
+Auth Required: Non
+
+Request:
+  Body:
+    refresh: string
+
+Response Success (200):
+  { "success": true, "message": "Token rafraîchi", "data": {
+        "access": "eyJ...",
+        "refresh": "eyJ...", # Nouveau refresh (rotation)
+      } }
+
+Response Error (401):
+  {
+    "success": false,
+    "message": "Token invalide ou expiré",
+    "error": { "code": "AUTH_TOKEN_INVALID", "details": null },
+  }

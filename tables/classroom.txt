@@ -1,0 +1,100 @@
+Étape 3 – Table : Classroom
+
+
+---
+
+1. Rôle métier
+
+Classroom représente une classe physique ou pédagogique pour un niveau et une année scolaire.
+
+Il sert à :
+
+accueillir des élèves pour un SchoolYearLevel spécifique
+
+organiser les affectations de professeurs et matières
+
+lier les emplois du temps et évaluations à un groupe d’élèves précis
+
+
+⚠️ Chaque classe est unique par combinaison SchoolYearLevel + name.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+school_year_level_id	FK → SchoolYearLevel	oui	Niveau de l’année scolaire associé
+name	string	oui	Nom de la classe (ex. 2ème Année A1)
+capacity	integer	non	Capacité maximale d’élèves
+room_number	string	non	Numéro de salle ou code interne
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → CustomUser	non	Audit
+updated_by	FK → CustomUser	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → CustomUser	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+(school_year_level_id, name) UNIQUE
+
+
+Contraintes logiques
+
+La capacité doit être >= 0 si renseignée
+
+Une classe ne peut pas être supprimée si des élèves y sont inscrits ou des enseignants y sont affectés
+
+
+
+---
+
+4. Logiques métier (règles)
+
+Chaque Classroom correspond à un niveau et année scolaire précis
+
+Permet d’assigner élèves et enseignants
+
+Permet d’organiser les emplois du temps et les évaluations pour le groupe
+
+Toute modification doit vérifier les dépendances sur inscriptions et affectations
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans Classroom
+
+❌ Année scolaire ou niveau direct (référencés via school_year_level_id) ❌ Matières ou coefficients (gérés dans SchoolYearLevelSubject) ❌ Évaluations ou notes individuelles (gérées dans CycleAssessment)
+
+
+---
+
+6. Dépendances
+
+Utilisé par : StudentEnrollment, TeacherAssignment, Schedule, CycleAssessment
+
+Dépend de : SchoolYearLevel
+
+
+
+---
+
+7. Validation Étape 3
+
+✅ Table spécifique à l’application ✅ Liens cohérents avec SchoolYearLevel ✅ Gestion des élèves et enseignants par classe
+
+
+---
+
+Table Classroom validée.

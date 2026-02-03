@@ -1,5 +1,7 @@
 """
 User management views.
+
+API Contract: See API_ENDPOINTS.md section 3
 """
 
 from rest_framework.permissions import IsAuthenticated
@@ -15,12 +17,17 @@ from ..serializers import (
 
 
 class MeView(BaseAPIView):
-    """Get or update current user's profile."""
+    """
+    Get or update current user's profile.
+    
+    GET /api/auth/me/
+    PATCH /api/auth/me/
+    """
 
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["Users"],
+        tags=["User Profile"],
         summary="Get current user profile",
     )
     def get(self, request):
@@ -28,7 +35,7 @@ class MeView(BaseAPIView):
         return self.success_response(data=serializer.data)
 
     @extend_schema(
-        tags=["Users"],
+        tags=["User Profile"],
         summary="Update current user profile",
         request=UserUpdateSerializer,
     )
@@ -41,11 +48,11 @@ class MeView(BaseAPIView):
 
         return self.success_response(
             data=UserDetailSerializer(request.user).data,
-            message="Profile updated successfully.",
+            message="Profil mis à jour",
         )
 
     @extend_schema(
-        tags=["Users"],
+        tags=["User Profile"],
         summary="Update current user profile",
         request=UserUpdateSerializer,
     )
@@ -56,18 +63,22 @@ class MeView(BaseAPIView):
 
         return self.success_response(
             data=UserDetailSerializer(request.user).data,
-            message="Profile updated successfully.",
+            message="Profil mis à jour",
         )
 
 
 class UpdateEmailView(BaseAPIView):
-    """Update user's email address."""
+    """
+    Add or change user's email address.
+    
+    POST /api/auth/me/email/
+    """
 
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["Users"],
-        summary="Update email address",
+        tags=["User Profile"],
+        summary="Change email address",
         request=UserEmailUpdateSerializer,
     )
     def post(self, request):
@@ -80,19 +91,27 @@ class UpdateEmailView(BaseAPIView):
         user.update_email(serializer.validated_data["email"])
 
         return self.success_response(
-            data={"email": user.email, "email_verified": user.email_verified},
-            message="Email updated. Please verify your new email address.",
+            data={
+                "email": user.email,
+                "email_verified": user.email_verified,
+                "verification_sent": True,
+            },
+            message="Email modifié. Vérification requise.",
         )
 
 
 class UpdatePhoneView(BaseAPIView):
-    """Update user's phone number."""
+    """
+    Add or change user's phone number.
+    
+    POST /api/auth/me/phone/
+    """
 
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["Users"],
-        summary="Update phone number",
+        tags=["User Profile"],
+        summary="Change phone number",
         request=UserPhoneUpdateSerializer,
     )
     def post(self, request):
@@ -105,6 +124,10 @@ class UpdatePhoneView(BaseAPIView):
         user.update_phone(serializer.validated_data["phone"])
 
         return self.success_response(
-            data={"phone": user.phone, "phone_verified": user.phone_verified},
-            message="Phone updated. Please verify your new phone number.",
+            data={
+                "phone": user.phone,
+                "phone_verified": user.phone_verified,
+                "verification_sent": True,
+            },
+            message="Téléphone modifié. Vérification requise.",
         )

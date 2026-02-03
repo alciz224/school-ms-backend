@@ -1,0 +1,4 @@
+- approche par couches
+- étape 0 -> étape N
+- 1 table = 1 message 
+- analyse systématique : rôle -> champs -> contraintes -> logiques -> exclusions

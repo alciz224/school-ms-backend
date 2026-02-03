@@ -1,0 +1,115 @@
+Transcript / AcademicRecord
+
+Rôle métier
+
+Représente le dossier académique officiel d’un élève, consolidant toutes ses ReportCards sur plusieurs années scolaires.
+
+Ce document est :
+
+officiel et figé pour chaque période
+
+utilisé pour admissions, inspections, mobilité
+
+base légale pour décisions pédagogiques et ministérielles
+
+
+
+---
+
+Champs
+
+id
+
+student_enrollment_id (FK → StudentEnrollment)
+
+school_year_id (FK → SchoolYear)
+
+cycle_id (FK → SchoolYearCycle)
+
+level_id (FK → SchoolYearLevel)
+
+average_score (decimal, nullable)
+
+rank (int, nullable)
+
+decision (enum: PASS / FAIL / REPEAT / TRANSFER / PENDING)
+
+remarks (text, nullable)
+
+status (enum: DRAFT / FINAL / LOCKED)
+
+generated_at (datetime)
+
+locked_at (datetime, nullable)
+
+created_at, updated_at
+
+created_by, updated_by
+
+
+
+---
+
+Status
+
+DRAFT → compilation en cours
+
+FINAL → dossier officiel complet
+
+LOCKED → figé, aucune modification possible
+
+
+
+---
+
+Contraintes
+
+Unicité
+
+(student_enrollment_id, school_year_id, cycle_id, level_id) UNIQUE
+
+
+Cohérence
+
+Toutes les ReportCards incluses doivent être CLOSED et VALIDATED
+
+L’élève doit être ACTIF pendant la période scolaire
+
+
+
+---
+
+Logiques métier
+
+Agrégation automatique des moyennes pondérées de toutes les matières et périodes
+
+Calcul du rang annuel par classe ou par cycle selon paramètre
+
+Décision pédagogique (PASS / FAIL / REPEAT / TRANSFER) déterminée sur la base des règles internes ou du ministère
+
+Historisation complète : le dossier reste figé même si l’élève est transféré ou que les ReportCards sont modifiées ultérieurement
+
+
+
+---
+
+Ce qu’on ne met PAS ici
+
+❌ Notes détaillées par matière (elles restent dans StudentAssessment) ❌ Professeurs ❌ Créneaux horaires
+
+
+---
+
+Dépendances
+
+Dépend de : StudentEnrollment, ReportCard, SchoolYear, SchoolYearCycle, SchoolYearLevel
+
+Utilisée par : Ministère, inspections, transferts, statistiques, analyses longitudinales
+
+
+
+---
+
+Validation
+
+✅ Hiérarchie respectée ✅ Historique figé ✅ Compatible audits et reporting officiel

@@ -1,0 +1,19 @@
+Description: Ajouter ou modifier son email
+Auth Required: Oui
+
+Request:
+  Body:
+    email: string
+    current_password: string # Requis pour sécurité
+
+Response Success (200):
+  {
+    "success": true,
+    "message": "Email modifié. Vérification requise.",
+    "data":
+      {
+        "email": "new@example.com",
+        "email_verified": false,
+        "verification_sent": true,
+      },
+  }

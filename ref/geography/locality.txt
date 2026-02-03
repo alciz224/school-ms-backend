@@ -1,0 +1,99 @@
+Étape 1 – Table : Locality
+
+
+---
+
+1. Rôle métier
+
+Locality représente un quartier ou village.
+
+Il sert à :
+
+compléter la hiérarchie administrative en descendant jusqu’au niveau opérationnel
+
+permettre l’affectation d’écoles à une localisation précise
+
+servir de référence pour les élèves, enseignants et établissements
+
+
+⚠️ Locality est un référentiel global, indépendant des écoles et années scolaires.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+administrative_unit_id	FK → AdministrativeUnit	oui	Unité administrative parent (préfecture, commune, sous-préfecture)
+code	string	oui	Code court (ex. KASSAPO, FILIMA)
+name	string	oui	Nom lisible (Kassapo, Filima)
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → User	non	Audit
+updated_by	FK → User	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → User	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+(administrative_unit_id, code) UNIQUE
+
+(administrative_unit_id, name) UNIQUE
+
+
+Contraintes logiques
+
+L’unité administrative associée doit exister et ne pas être supprimée
+
+Une localité ne peut pas être supprimée physiquement si des écoles y sont associées
+
+
+
+---
+
+4. Logiques métier (règles)
+
+Locality est global et partagé entre écoles
+
+Permet d’affecter des établissements, élèves ou enseignants à un lieu précis
+
+Toute modification doit vérifier les dépendances aux écoles et aux utilisateurs
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans Locality
+
+❌ Années scolaires ❌ Classes ou professeurs ❌ Statut actif/inactif (géré dans SchoolYear ou SchoolYearLocality)
+
+
+---
+
+6. Dépendances
+
+Utilisé par : School, Student, Teacher
+
+Dépend de : AdministrativeUnit
+
+
+
+---
+
+7. Validation Étape 0
+
+✅ Table MASTER stable, abstraite et globale ✅ Conforme aux règles globales ✅ Hiérarchie uniforme et flexible jusqu’au niveau quartier/village
+
+
+---
+
+Table Locality validée.

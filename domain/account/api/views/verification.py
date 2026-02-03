@@ -1,5 +1,7 @@
 """
 Verification views.
+
+API Contract: See API_ENDPOINTS.md sections 5.1-5.3
 """
 
 from rest_framework.permissions import IsAuthenticated
@@ -14,15 +16,19 @@ from ..throttling import VerificationRateThrottle
 from domain.account.services import VerificationService
 
 
-class RequestVerificationView(BaseAPIView):
-    """Request a verification code."""
+class SendVerificationCodeView(BaseAPIView):
+    """
+    Send a verification code.
+    
+    POST /api/auth/verify/send/
+    """
 
     permission_classes = [IsAuthenticated]
     throttle_classes = [VerificationRateThrottle]
 
     @extend_schema(
         tags=["Verification"],
-        summary="Request verification code",
+        summary="Send verification code",
         request=SendVerificationCodeSerializer,
     )
     def post(self, request):
@@ -48,18 +54,22 @@ class RequestVerificationView(BaseAPIView):
 
         return self.success_response(
             data=response_data,
-            message=f"Verification code sent to your {serializer.validated_data['type']}.",
+            message="Code envoyé",
         )
 
 
-class VerifyCodeView(BaseAPIView):
-    """Verify email or phone with code."""
+class ConfirmVerificationCodeView(BaseAPIView):
+    """
+    Confirm verification with code.
+    
+    POST /api/auth/verify/confirm/
+    """
 
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
         tags=["Verification"],
-        summary="Verify code",
+        summary="Confirm verification code",
         request=ConfirmVerificationCodeSerializer,
     )
     def post(self, request):
@@ -75,13 +85,15 @@ class VerifyCodeView(BaseAPIView):
 
         return self.success_response(
             data={
-                "verified_type": result.verified_type,
+                "type": result.verified_type,
                 "verified_at": result.verified_at.isoformat(),
                 "is_fully_verified": result.is_fully_verified,
-                "security_score": result.security_score,
-                "security_level": result.security_level,
+                "security": {
+                    "score": result.security_score,
+                    "level": result.security_level,
+                },
             },
-            message=f"Your {result.verified_type} has been verified successfully.",
+            message="Vérification réussie",
         )
 
 

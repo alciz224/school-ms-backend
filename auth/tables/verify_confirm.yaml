@@ -1,0 +1,30 @@
+Description: Confirmer le code de vérification
+Auth Required: Oui
+
+Request:
+  Headers:
+    Authorization: Bearer <access_token>
+  Body:
+    type: "email | phone"
+    code: string # Code 6 chiffres
+
+Response Success (200):
+  {
+    "success": true,
+    "message": "Vérification réussie",
+    "data":
+      {
+        "type": "email",
+        "verified_at": "2024-01-15T10:30:00Z",
+        "is_fully_verified": true,
+        "security": { "score": 50, "level": "medium" },
+      },
+  }
+
+Response Error (400):
+  {
+    "success": false,
+    "message": "Code incorrect",
+    "error":
+      { "code": "VERIFY_CODE_INVALID", "details": { "attempts_remaining": 2 } },
+  }

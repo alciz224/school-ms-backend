@@ -7,6 +7,47 @@ from rest_framework.response import Response
 from rest_framework import status
 
 
+def api_response(
+    data: Any = None,
+    message: Optional[str] = None,
+    success: bool = True,
+    status_code: int = status.HTTP_200_OK,
+    code: str = "error",
+    details: Optional[Dict] = None,
+    field_errors: Optional[Dict[str, List[str]]] = None,
+    **extra,
+) -> Response:
+    """Backward-compatible response helper.
+
+    The codebase historically used `api_response(...)`. Newer code should prefer
+    `success_response`, `created_response`, `no_content_response`, and `error_response`.
+
+    Args:
+        data: Response payload
+        message: Human-readable message
+        success: Whether the response indicates success
+        status_code: HTTP status code
+        code: Error code when `success` is False
+        details: Additional error details
+        field_errors: Field-specific validation errors
+        **extra: Extra fields to merge into the response body
+
+    Returns:
+        DRF Response
+    """
+
+    if success:
+        return success_response(data=data, message=message, status_code=status_code, **extra)
+
+    return error_response(
+        message=message or "An error occurred.",
+        code=code,
+        details=details,
+        field_errors=field_errors,
+        status_code=status_code,
+    )
+
+
 def success_response(
     data: Any = None,
     message: Optional[str] = None,

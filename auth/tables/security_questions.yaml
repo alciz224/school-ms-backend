@@ -1,0 +1,11 @@
+Description: Liste des questions prédéfinies
+Auth Required: Non
+
+Response Success (200):
+  { "success": true, "message": null, "data": { "predefined_questions": [
+            "Quel est le nom de votre école primaire ?",
+            "Quel est le nom de votre professeur préféré ?",
+            "Dans quelle ville avez-vous passé le CEE ?",
+            "Quel est le prénom de votre mère ?",
+            # ...
+          ], "min_required": 2, "max_allowed": 3, "allow_custom": true } }

@@ -1,0 +1,127 @@
+Étape 3 – Table : StudentEnrollment
+
+
+---
+
+1. Rôle métier
+
+StudentEnrollment représente l’inscription d’un élève dans un niveau pour une année scolaire, avec possibilité de pré-inscription avant affectation à une classe et gestion professionnelle des transferts entre classes.
+
+Il sert à :
+
+gérer les inscriptions et pré-inscriptions des élèves
+
+suivre le statut de l’élève (pré-inscrit, actif, terminé, abandonné)
+
+gérer les doublons et homonymes grâce aux identifiants logiques et aux prénoms/noms
+
+permettre le transfert d’élèves vers une autre classe du même niveau sans affecter les autres élèves
+
+servir de référence pour les évaluations, emplois du temps et bulletins
+
+
+⚠️ Chaque élève peut avoir plusieurs inscriptions, mais les identifiants logiques garantissent l’unicité fonctionnelle.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+student_id	FK → CustomUser (Student)	oui	Élève inscrit
+first_name	string	oui	Prénom de l’élève
+last_name	string	oui	Nom de l’élève
+school_year_level_id	FK → SchoolYearLevel	oui	Niveau et année scolaire visés
+classroom_id	FK → Classroom	non	Classe affectée (NULL si pré-inscription)
+previous_classroom_id	FK → Classroom	non	Classe précédente en cas de transfert
+enrollment_status	enum	oui	PRE_REGISTERED / ACTIVE / COMPLETED / DROPPED
+enrollment_date	date	oui	Date de l’inscription initiale
+start_date	date	non	Date de début effective dans la classe
+end_date	date	non	Date de fin / sortie
+transfer_reason	string	non	Raison du transfert (optionnel)
+annual_identifier	string	oui	Identifie l’élève dans l’année scolaire pour gérer les doublons
+pre_enroll_level_same_name_identifier	string	non	Gère les homonymes dans un niveau pour la pré-inscription, inclut first_name et last_name pour l’unicité
+classroom_identifier	string	non	Identifiant technique de l’élève dans la classe (ne gère pas les homonymes)
+classroom_same_name_identifier	string	non	Gère les homonymes dans la même classe pour l’élève transféré, inclut first_name et last_name pour l’unicité
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → CustomUser	non	Audit
+updated_by	FK → CustomUser	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → CustomUser	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+(student_id, school_year_level_id) UNIQUE
+
+annual_identifier UNIQUE pour l’année scolaire
+
+pre_enroll_level_same_name_identifier UNIQUE pour les pré-inscriptions dans le même niveau en combinant first_name et last_name
+
+classroom_same_name_identifier UNIQUE dans la même classe pour l’élève transféré en combinant first_name et last_name
+
+
+Contraintes logiques
+
+classroom_id peut être NULL pour la pré-inscription
+
+Les dates doivent être cohérentes : start_date >= enrollment_date et end_date >= start_date si renseignées
+
+Une inscription ne peut pas être supprimée si des évaluations ou bulletins y sont liés
+
+Lors d’un transfert, les identifiants des autres élèves dans les classes d’origine et d’arrivée restent inchangés
+
+
+
+---
+
+4. Logiques métier (règles)
+
+Permet de gérer les pré-inscriptions et inscriptions effectives
+
+Permet le transfert d’un élève vers une autre classe du même niveau sans impacter les autres élèves
+
+Les identifiants logiques de l’élève transféré sont mis à jour après affectation dans la nouvelle classe
+
+Chaque inscription est liée à un niveau et éventuellement à une classe
+
+Toute modification doit vérifier les dépendances sur les évaluations et bulletins
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans StudentEnrollment
+
+❌ Année scolaire ou école directes (référencées via school_year_level_id) ❌ Matières ou coefficients (gérés dans SchoolYearLevelSubject) ❌ Évaluations individuelles (gérées dans CycleAssessment)
+
+
+---
+
+6. Dépendances
+
+Utilisé par : CycleAssessment, bulletins, emplois du temps
+
+Dépend de : CustomUser (Student), SchoolYearLevel, Classroom (optionnel)
+
+
+
+---
+
+7. Validation Étape 3
+
+✅ Table spécifique à l’application ✅ Gestion des pré-inscriptions, transferts et homonymes avec first_name et last_name ✅ Liens cohérents avec SchoolYearLevel et Classroom ✅ Audit et soft delete inclus
+
+
+---
+
+Table StudentEnrollment validée.

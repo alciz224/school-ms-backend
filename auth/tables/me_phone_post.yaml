@@ -1,0 +1,19 @@
+Description: Ajouter ou modifier son téléphone
+Auth Required: Oui
+
+Request:
+  Body:
+    phone: string
+    current_password: string
+
+Response Success (200):
+  {
+    "success": true,
+    "message": "Téléphone modifié. Vérification requise.",
+    "data":
+      {
+        "phone": "+224620999999",
+        "phone_verified": false,
+        "verification_sent": true,
+      },
+  }

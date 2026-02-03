@@ -1,0 +1,99 @@
+Étape 3 – Table : SchoolYearLevel
+
+
+---
+
+1. Rôle métier
+
+SchoolYearLevel représente un niveau spécifique d’un cycle pour une année scolaire.
+
+Il sert à :
+
+lier un Level MASTER à un SchoolYearCycle
+
+définir une éventuelle Track (option/filère) si le cycle le nécessite
+
+servir de conteneur pour les matières (SchoolYearLevelSubject) et les classes (Classroom)
+
+faciliter la gestion des évaluations et inscriptions par niveau
+
+
+⚠️ Chaque SchoolYearLevel est unique par combinaison SchoolYearCycle + Level + Track.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+school_year_cycle_id	FK → SchoolYearCycle	oui	Cycle de l’année scolaire associé
+level_id	FK → Level	oui	Niveau MASTER associé
+track_id	FK → Track	non	Option/filère si le cycle a des tracks
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → CustomUser	non	Audit
+updated_by	FK → CustomUser	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → CustomUser	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+(school_year_cycle_id, level_id, track_id) UNIQUE
+
+
+Contraintes logiques
+
+track_id obligatoire uniquement si Level.cycle.has_track = true
+
+Une fois créé, ne pas supprimer si des classes, matières ou évaluations y sont associées
+
+
+
+---
+
+4. Logiques métier (règles)
+
+Définit le niveau et l’option pour un cycle et une année scolaire
+
+Permet de créer les matières (SchoolYearLevelSubject) et classes (Classroom) associées
+
+Toute modification doit vérifier les dépendances sur matières, classes et évaluations
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans SchoolYearLevel
+
+❌ Années scolaires ou cycles (référencés via school_year_cycle_id) ❌ Écoles directes ❌ Évaluations ou notes directes
+
+
+---
+
+6. Dépendances
+
+Utilisé par : SchoolYearLevelSubject, Classroom, StudentEnrollment, CycleAssessment
+
+Dépend de : SchoolYearCycle, Level, Track (optionnel)
+
+
+
+---
+
+7. Validation Étape 3
+
+✅ Table spécifique à l’application ✅ Gestion de Track correcte pour les niveaux ✅ Liens cohérents avec MASTER Level et SchoolYearCycle
+
+
+---
+
+Table SchoolYearLevel validée.

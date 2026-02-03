@@ -1,0 +1,97 @@
+Étape 3 – Table : SchoolYearLevelSubject
+
+
+---
+
+1. Rôle métier
+
+SchoolYearLevelSubject représente l’association d’une matière à un niveau spécifique pour une année scolaire.
+
+Il sert à :
+
+lier un Subject MASTER à un SchoolYearLevel
+
+définir le coefficient de la matière pour ce niveau et cette année scolaire
+
+servir de référence pour les évaluations et calculs de moyenne
+
+
+⚠️ Chaque matière pour un niveau a un coefficient unique.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+school_year_level_id	FK → SchoolYearLevel	oui	Niveau de l’année scolaire associé
+subject_id	FK → Subject	oui	Matière MASTER associée
+coefficient	decimal	oui	Coefficient de la matière pour le niveau
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → CustomUser	non	Audit
+updated_by	FK → CustomUser	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → CustomUser	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+(school_year_level_id, subject_id) UNIQUE
+
+
+Contraintes logiques
+
+coefficient doit être > 0
+
+Une fois créé, ne pas supprimer si des évaluations ou notes y sont associées
+
+
+
+---
+
+4. Logiques métier (règles)
+
+Permet de calculer les moyennes par matière et par niveau
+
+Chaque SchoolYearLevel peut avoir plusieurs matières avec coefficients différents
+
+Toute modification doit vérifier les dépendances sur les évaluations futures
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans SchoolYearLevelSubject
+
+❌ Niveaux ou cycles directs (référencés via school_year_level_id) ❌ Écoles directes ❌ Évaluations elles-mêmes (gérées dans CycleAssessment)
+
+
+---
+
+6. Dépendances
+
+Utilisé par : CycleAssessment, calculs de moyenne, bulletins
+
+Dépend de : SchoolYearLevel, Subject
+
+
+
+---
+
+7. Validation Étape 3
+
+✅ Table spécifique à l’application ✅ Gestion des coefficients par matière et niveau ✅ Liens cohérents avec MASTER Subject et SchoolYearLevel
+
+
+---
+
+Table SchoolYearLevelSubject validée.

@@ -1,0 +1,99 @@
+Étape 1 – Table : Track
+
+
+---
+
+1. Rôle métier
+
+Track représente une option pédagogique ou filière dans un cycle donné.
+
+Il sert à :
+
+définir les spécialisations pour un cycle (ex. Sciences Mathématiques, Sciences Sociales)
+
+être référencé par Level et SchoolYearLevel
+
+être partagé entre plusieurs écoles
+
+
+⚠️ Track est un référentiel global, indépendant de l’école et de l’année scolaire.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+code	string	oui	Code court (SM, SS)
+name	string	oui	Nom lisible (Sciences Mathématiques, Sciences Sociales)
+cycle_id	FK → Cycle	oui	Cycle auquel la track appartient
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → User	non	Audit
+updated_by	FK → User	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → User	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+(cycle_id, code) UNIQUE
+
+(cycle_id, name) UNIQUE
+
+
+Contraintes logiques
+
+Track ne peut exister que pour un Cycle avec has_track = true
+
+une fois créé, ne pas supprimer physiquement s’il est utilisé dans un Level
+
+
+
+---
+
+4. Logiques métier (règles)
+
+Track est global et partagé entre écoles
+
+Il sert à créer des Level spécifiques à la filière
+
+Toute modification ou suppression doit vérifier les dépendances aux niveaux et aux années scolaires
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans Track
+
+❌ Référence directe à une école ou année scolaire ❌ Statut actif/inactif (géré dans SchoolYearLevel) ❌ Dates pédagogiques ❌ Professeurs ou classes
+
+
+---
+
+6. Dépendances
+
+Utilisé par : Level, SchoolYearLevel
+
+Dépend de : Cycle
+
+
+
+---
+
+7. Validation Étape 0
+
+✅ Table MASTER stable, abstraite et globale ✅ Conforme aux règles globales ✅ Pas de redondance ni de logique temporelle
+
+
+---
+
+Table Track validée.

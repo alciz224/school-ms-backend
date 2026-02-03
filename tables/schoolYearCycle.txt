@@ -1,0 +1,99 @@
+Étape 3 – Table : SchoolYearCycle
+
+
+---
+
+1. Rôle métier
+
+SchoolYearCycle représente un cycle enseigné dans une école pour une année scolaire spécifique.
+
+Il sert à :
+
+lier un Cycle MASTER à une SchoolYear
+
+définir le type de période (TermType) applicable pour ce cycle et cette année
+
+servir de conteneur pour les niveaux (SchoolYearLevel) et les évaluations
+
+
+⚠️ Chaque SchoolYearCycle est unique par SchoolYear et Cycle.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+school_year_id	FK → SchoolYear	oui	Année scolaire associée
+cycle_id	FK → Cycle	oui	Cycle enseigné (MASTER)
+term_type_id	FK → TermType	oui	Type de période pour ce cycle (trimestre, semestre, etc.)
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → CustomUser	non	Audit
+updated_by	FK → CustomUser	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → CustomUser	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+(school_year_id, cycle_id) UNIQUE
+
+
+Contraintes logiques
+
+term_type_id doit exister et être cohérent avec la durée de la SchoolYear
+
+Une fois créé, ne pas supprimer si des niveaux ou évaluations y sont associés
+
+
+
+---
+
+4. Logiques métier (règles)
+
+Définit le cycle d’enseignement pour une année scolaire
+
+Permet de créer les SchoolYearLevel pour ce cycle, où track_id sera défini si nécessaire
+
+Permet d’associer les évaluations avec le type de période (TermType)
+
+Toute modification doit vérifier les dépendances sur niveaux et évaluations
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans SchoolYearCycle
+
+❌ Track / Option (géré dans SchoolYearLevel) ❌ Écoles ou années scolaires directes (référencées via school_year_id) ❌ Classes ou professeurs directs ❌ Évaluations ou notes (gérées dans CycleAssessment)
+
+
+---
+
+6. Dépendances
+
+Utilisé par : SchoolYearLevel, CycleAssessment, SchoolYearClassroom
+
+Dépend de : SchoolYear, Cycle, TermType
+
+
+
+---
+
+7. Validation Étape 3
+
+✅ Table spécifique à l’application ✅ Lien cohérent avec SchoolYear et MASTER Cycle ✅ Inclusion du TermType pour gérer les périodes
+
+
+---
+
+Table SchoolYearCycle validée.

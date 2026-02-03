@@ -1,0 +1,105 @@
+Étape 3 – Table : School
+
+
+---
+
+1. Rôle métier
+
+School représente un établissement scolaire.
+
+Il sert à :
+
+être la base de toutes les données pédagogiques et administratives
+
+lier les années scolaires (SchoolYear), enseignants, élèves et classes
+
+référencer la localisation via Locality et les référentiels géographiques
+
+
+⚠️ School est spécifique à l’application, mais ses références géographiques restent globales.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+name	string	oui	Nom de l’école (ex. Lycée Filima)
+code	string	oui	Code unique interne de l’école
+localité_id	FK → Locality	oui	Quartier / village où se situe l’école
+address	string	non	Adresse détaillée
+phone	string	non	Contact téléphonique
+email	string	non	Contact email
+website	string	non	Site web (optionnel)
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → CustomUser	non	Audit
+updated_by	FK → CustomUser	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → CustomUser	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+code UNIQUE
+
+name UNIQUE
+
+
+Contraintes logiques
+
+locality_id doit exister et ne pas être supprimée
+
+Une école ne peut pas être supprimée physiquement si des SchoolYear ou utilisateurs y sont associés
+
+
+
+---
+
+4. Logiques métier (règles)
+
+School est le point central pour toutes les données pédagogiques
+
+Les années scolaires (SchoolYear) sont créées par école
+
+Les enseignants, élèves et classes sont affectés à une école spécifique
+
+Toute modification doit vérifier les dépendances aux années scolaires et inscriptions
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans School
+
+❌ Années scolaires elles-mêmes (gérées par SchoolYear) ❌ Classes et professeurs (gérés par SchoolYear et Classroom) ❌ Évaluations ou notes
+
+
+---
+
+6. Dépendances
+
+Utilisé par : SchoolYear, Classroom, StudentEnrollment, TeacherAssignment
+
+Dépend de : Locality
+
+
+
+---
+
+7. Validation Étape 3
+
+✅ Table spécifique à l’application ✅ Références géographiques globales correctement liées ✅ Cohérence avec les futures tables SchoolYear et Classroom
+
+
+---
+
+Table School validée.

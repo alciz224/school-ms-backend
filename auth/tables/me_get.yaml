@@ -1,0 +1,55 @@
+#GET ================================================================
+Description: Récupérer mon profil
+Auth Required: Oui
+
+Response Success (200):
+  {
+    "success": true,
+    "message": null,
+    "data":
+      {
+        "id": "uuid",
+        "email": "user@example.com",
+        "email_masked": "u***@example.com",
+        "phone": "+224620123456",
+        "phone_masked": "+224 6XX-XXX-456",
+        "first_name": "Mamadou",
+        "last_name": "Diallo",
+        "full_name": "Mamadou Diallo",
+        "backup_phone": "+224621000000",
+        "backup_phone_owner": "Papa",
+
+        "verification":
+          {
+            "is_verified": true,
+            "email_verified": true,
+            "email_verified_at": "2024-01-15T10:30:00Z",
+            "phone_verified": false,
+            "phone_verified_at": null,
+          },
+
+        "security":
+          {
+            "score": 65,
+            "level": "medium",
+            "has_security_questions": true,
+            "security_questions_count": 2,
+            "has_backup_phone": true,
+            "suggestions":
+              [
+                "Vérifiez votre numéro de téléphone",
+                "Ajoutez une 3ème question de sécurité",
+              ],
+          },
+
+        "profiles":
+          {
+            "has_student": true,
+            "has_teacher": false,
+            "has_school_admin": false,
+          },
+
+        "date_joined": "2024-01-10T08:00:00Z",
+        "last_login": "2024-01-20T14:30:00Z",
+      },
+  }

@@ -1,0 +1,178 @@
+StudentAssessment
+
+Rôle métier
+
+Représente la note individuelle d’un élève pour une AssessmentSubject donnée.
+
+C’est la table la plus sensible du système :
+
+elle porte la vérité académique
+
+elle alimente bulletins, classements et décisions
+
+
+⚠️ Aucune logique de barème global ici : le max_score est défini au niveau du SchoolYearLevel.
+
+
+---
+
+Champs
+
+id
+
+assessment_subject_id (FK → AssessmentSubject)
+
+student_enrollment_id (FK → StudentEnrollment)
+
+raw_score (decimal, nullable)
+
+normalized_score (decimal, nullable)
+
+status (enum)
+
+is_absent (boolean)
+
+is_excused (boolean)
+
+remark (text, nullable)
+
+created_at, updated_at
+
+created_by, updated_by
+
+
+
+---
+
+Statuts (status)
+
+DRAFT → note saisie mais non validée
+
+SUBMITTED → note finalisée par l’enseignant
+
+VALIDATED → validée par l’administration / conseil pédagogique
+
+CANCELLED → note annulée (fraude, erreur, exclusion)
+
+
+
+---
+
+Contraintes critiques
+
+Unicité
+
+(assessment_subject_id, student_enrollment_id) UNIQUE
+
+
+Cohérence académique
+
+L’élève doit :
+
+appartenir à la classe liée à AssessmentSubject
+
+être ACTIF au moment de l’évaluation
+
+
+raw_score doit respecter :
+
+0 <= raw_score <= max_score_du_niveau
+
+
+Si is_absent = true alors :
+
+raw_score IS NULL
+
+status != VALIDATED
+
+
+
+
+---
+
+Logiques métier clés
+
+1️⃣ Gestion du barème (important)
+
+Le barème (max_score) est lu depuis :
+
+AssessmentSubject
+  → SchoolYearLevelSubject
+    → SchoolYearLevel
+
+normalized_score permet :
+
+comparaisons inter-matières
+
+moyennes pondérées
+
+
+
+Exemple :
+
+raw_score = 17
+max_score_niveau = 20
+normalized_score = 17
+
+Ou si max = 40 :
+
+raw_score = 34
+normalized_score = 17
+
+
+---
+
+2️⃣ Absence & justification
+
+is_absent = true :
+
+pas de note
+
+exclusion des moyennes
+
+
+is_excused = true :
+
+rattrapage possible
+
+
+
+
+---
+
+3️⃣ Gel des données
+
+Si AssessmentSubject.status = CLOSED :
+
+aucune modification autorisée
+
+
+Si StudentEnrollment est transféré de classe :
+
+la note reste rattachée à l’ancienne classe (historique)
+
+
+
+
+---
+
+Ce qu’on ne met PAS ici
+
+❌ Coefficient ❌ Max score ❌ Classe ❌ Professeur
+
+
+---
+
+Dépendances
+
+Dépend de : AssessmentSubject, StudentEnrollment
+
+Utilisée par : ReportCard, Ranking, Statistics
+
+
+
+---
+
+Validation finale
+
+✅ Barème centralisé au bon niveau ✅ Historique inviolable ✅ Compatible transferts & absences ✅ Prête pour bulletins officiels

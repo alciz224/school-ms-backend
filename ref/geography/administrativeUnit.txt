@@ -1,0 +1,107 @@
+Étape 1 – Table : AdministrativeUnit
+
+
+---
+
+1. Rôle métier
+
+AdministrativeUnit représente une division administrative intermédiaire : préfecture, commune ou sous-préfecture.
+
+Il sert à :
+
+structurer toutes les subdivisions entre RegionAdministrative et Locality
+
+gérer la hiérarchie administrative de manière uniforme
+
+servir de référence pour l’affectation des écoles et localités
+
+
+⚠️ AdministrativeUnit est un référentiel global, indépendant des écoles et années scolaires.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+region_id	FK → RegionAdministrative	oui	Région associée
+parent_id	FK → AdministrativeUnit	non	Parent dans la hiérarchie (NULL pour les préfectures/communes de premier niveau)
+code	string	oui	Code court (ex. KAMSAR, KALOUM)
+name	string	oui	Nom lisible (Kamsar, Kaloum)
+type	enum	oui	Type : PREFECTURE / COMMUNE / SUBPREFECTURE
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → User	non	Audit
+updated_by	FK → User	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → User	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+(region_id, code) UNIQUE
+
+(region_id, name) UNIQUE
+
+
+Contraintes logiques
+
+type = SUBPREFECTURE → parent_id obligatoire et doit être une PREFECTURE
+
+type = COMMUNE → parent_id NULL
+
+type = PREFECTURE → parent_id NULL
+
+Une unité ne peut pas être supprimée physiquement si des localités ou écoles y sont associées
+
+
+
+---
+
+4. Logiques métier (règles)
+
+Permet une hiérarchie récursive flexible
+
+Les écoles peuvent être associées à n’importe quelle unité (préfecture, commune, sous-préfecture)
+
+Les quartiers et villages sont liés via Locality
+
+Toute modification doit vérifier les dépendances aux localités et écoles
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans AdministrativeUnit
+
+❌ Années scolaires ❌ Classes ou professeurs ❌ Statut actif/inactif (géré au niveau de SchoolYear ou SchoolYearLocality)
+
+
+---
+
+6. Dépendances
+
+Utilisé par : Locality, School (pour l’adresse)
+
+Dépend de : RegionAdministrative, AdministrativeUnit (parent)
+
+
+
+---
+
+7. Validation Étape 0
+
+✅ Table MASTER stable, abstraite et globale ✅ Conforme aux règles globales ✅ Hiérarchie uniforme et flexible pour toutes les régions
+
+
+---
+
+Table AdministrativeUnit validée.

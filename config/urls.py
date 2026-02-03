@@ -20,9 +20,12 @@ from drf_spectacular.views import (
 urlpatterns = [
     # Admin
     path("admin/", admin.site.urls),
-    # API v1 - Authentication & User Management
+    # API v1 - Authentication & User Management (JWT-based)
     # All account endpoints are prefixed with /api/v1/auth/ per API_ENDPOINTS.md
     path("api/v1/auth/", include("domain.account.api.urls", namespace="account")),
+    # API v2 - Authentication & User Management (Session-based)
+    # Session-based authentication for Next.js frontend
+    path("api/v2/auth/", include("domain.account.api.urls_v2", namespace="account_v2")),
     # API v1 - Geography (no app name prefix in URL)
     # URLs: /api/v1/countries/, /api/v1/regions/, /api/v1/administrative-units/, /api/v1/localities/
     path("api/v1/", include("domain.geography.api.urls", namespace="geography")),

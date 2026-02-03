@@ -1,0 +1,15 @@
+Description: Modifier mon profil
+Auth Required: Oui
+
+Request:
+  Headers:
+    Authorization: Bearer <access_token>
+  Body: # Tous optionnels
+    first_name: string
+    last_name: string
+    backup_phone: string
+    backup_phone_owner: string
+
+Response Success (200):
+  { "success": true, "message": "Profil mis à jour", "data": {} }
+# Même structure que GET /me/

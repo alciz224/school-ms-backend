@@ -15,6 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
     """Basic user serializer."""
 
     full_name = serializers.CharField(read_only=True)
+    security = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -27,8 +28,16 @@ class UserSerializer(serializers.ModelSerializer):
             "full_name",
             "is_verified",
             "is_active",
+            "security",
         ]
         read_only_fields = fields
+
+    def get_security(self, obj):
+        """Return security score and level."""
+        return {
+            "score": obj.security_score,
+            "level": obj.security_level,
+        }
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
@@ -107,10 +116,14 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserEmailUpdateSerializer(serializers.Serializer):
-    """Serializer for updating email."""
+    """
+    Serializer for updating email.
+    
+    API Contract: POST /api/auth/me/email/
+    """
 
     email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
+    current_password = serializers.CharField(write_only=True)
 
     def validate_email(self, value):
         value = value.lower().strip()
@@ -124,7 +137,7 @@ class UserEmailUpdateSerializer(serializers.Serializer):
 
         return value
 
-    def validate_password(self, value):
+    def validate_current_password(self, value):
         user = self.context.get("user") or self.context["request"].user
         if not user.check_password(value):
             raise serializers.ValidationError("Invalid password.")
@@ -132,10 +145,14 @@ class UserEmailUpdateSerializer(serializers.Serializer):
 
 
 class UserPhoneUpdateSerializer(serializers.Serializer):
-    """Serializer for updating phone."""
+    """
+    Serializer for updating phone.
+    
+    API Contract: POST /api/auth/me/phone/
+    """
 
     phone = serializers.CharField(max_length=20)
-    password = serializers.CharField(write_only=True)
+    current_password = serializers.CharField(write_only=True)
 
     def validate_phone(self, value):
         try:
@@ -152,7 +169,7 @@ class UserPhoneUpdateSerializer(serializers.Serializer):
 
         return value
 
-    def validate_password(self, value):
+    def validate_current_password(self, value):
         user = self.context.get("user") or self.context["request"].user
         if not user.check_password(value):
             raise serializers.ValidationError("Invalid password.")

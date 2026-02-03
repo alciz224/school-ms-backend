@@ -1,0 +1,829 @@
+# Enterprise-Grade Next.js + Django Authentication System Specification
+
+## 1. Executive Overview
+
+### 1.1 System Architecture
+A hybrid authentication system combining Django's battle-tested session management with modern JWT-based API authorization. Designed for enterprise security, horizontal scalability, and exceptional user experience across web, mobile, and SSR contexts.
+
+### 1.2 Core Security Principles
+- **Defense in Depth**: Three-layer token architecture prevents single point of compromise
+- **Zero Trust Client**: All sensitive tokens stored in HttpOnly cookies or memory only
+- **Automatic Threat Detection**: Token rotation with reuse detection identifies attacks in progress
+- **Compliance Ready**: Built-in audit trails for GDPR, SOC2, and HIPAA requirements
+
+### 1.3 Three-Token Architecture
+
+**Session Cookie** (Django Native)
+- **Purpose**: Server-side state management, SSR authentication, CSRF coordination
+- **Lifetime**: 2 hours sliding window
+- **Storage**: Database or Redis-backed Django sessions
+- **Use Cases**: User preferences, shopping cart, server-rendered page authentication
+
+**Refresh Token** (HttpOnly JWT Cookie)
+- **Purpose**: Long-lived credential for obtaining short-lived access tokens
+- **Lifetime**: 30 days with rotation (configurable: absolute, sliding, or hybrid expiration)
+- **Storage**: Redis-backed revocation list with automatic TTL cleanup
+- **Security**: Rotation on every use, reuse detection triggers full account lockout
+
+**Access Token** (Memory-Only JWT)
+- **Purpose**: Stateless API authorization with embedded claims
+- **Lifetime**: 15 minutes
+- **Storage**: Zustand in-memory store (never localStorage/sessionStorage)
+- **Contents**: Minimal claims (user_id, roles, permissions, jti for revocation)
+
+---
+
+## 2. Backend Architecture (Django)
+
+### 2.1 Session Management
+
+**Configuration Requirements**
+- Engine: `django.contrib.sessions.backends.cache` (Redis) for horizontal scaling
+- Security Flags: `HttpOnly=True`, `Secure=True`, `SameSite=Lax`
+- Domain Scoping: `.yourdomain.com` if Next.js on different subdomain
+- Path: `/` (full site access)
+- Expiration: 2-hour sliding window with absolute 8-hour maximum
+- Cleanup Strategy: Redis auto-expiration + daily cron for database fallback
+
+**Session Lifecycle**
+- **Creation**: On successful login, after credential validation
+- **Fixation Protection**: Call `request.session.cycle_key()` post-authentication
+- **Metadata Storage**: Device fingerprint (User-Agent hash), IP address, creation timestamp
+- **Invalidation**: On explicit logout, absolute timeout, or security event
+
+**Scaling Considerations**
+- Sharding by `user_id % shard_count` for Redis cluster deployment
+- Session replication strategy for multi-region deployments
+- Monitoring: Session duration distribution, creation rate, premature expiration alerts
+
+### 2.2 Refresh Token System
+
+**Token Generation**
+- Algorithm: RS256 (public key distribution for microservices) or EdDSA (performance-critical)
+- Claims Structure:
+  ```
+  sub: user_id (subject)
+  jti: unique token identifier (UUID v4)
+  iat: issued at timestamp
+  exp: expiration timestamp
+  device_id: fingerprint hash for anomaly detection
+  token_family: identifier for cascading invalidation
+  ```
+- Signing Keys: Rotate every 90 days, maintain 2-generation backward compatibility
+
+**Storage & Revocation**
+- **Active Tokens**: Redis sorted set `refresh_tokens:{user_id}` scored by expiration
+- **Blacklist**: Redis hash `revoked_tokens:{jti}` with TTL matching original expiration
+- **Cleanup**: Automatic Redis TTL + background job for orphaned entries
+- **Indexing**: By user_id (list all tokens), by jti (fast validation), by device_id (device management)
+
+**Rotation Mechanism** (Critical Security Feature)
+- **On Every Refresh**:
+  1. Validate incoming refresh token signature and expiration
+  2. Check Redis: Token exists in active set AND not in blacklist
+  3. Generate NEW refresh token (new jti, extended expiration)
+  4. Blacklist OLD refresh token jti immediately
+  5. Return new access token in response body
+  6. Set new refresh token as HttpOnly cookie
+  7. Log rotation event with both old and new jti
+
+**Reuse Detection** (Attack Identification)
+- If blacklisted refresh token is presented:
+  1. Identify token_family from blacklisted token
+  2. Invalidate ALL tokens in that family (across all devices)
+  3. Delete user's active session
+  4. Log security incident (user_id, IP, timestamp, attempted jti)
+  5. Trigger email notification: "Suspicious activity detected"
+  6. Return 401 with specific error code for client handling
+- Prevents: Token theft, session hijacking, replay attacks
+
+**Expiration Strategies** (Choose One)
+
+*Option A: Absolute Expiration*
+- Token dies exactly 30 days after issuance
+- Predictable security window
+- Best for: High-security environments (financial, healthcare)
+
+*Option B: Sliding Expiration*
+- Each use extends expiration by 30 days indefinitely
+- "Remember me forever" experience
+- Risk: Stolen token valid indefinitely if used regularly
+
+*Option C: Hybrid (Recommended)*
+- Sliding window up to 90-day absolute maximum
+- Each use extends by 30 days, capped at 90 days from first issue
+- Balances security and convenience
+- Best for: Most enterprise applications
+
+*Option D: Idle Timeout*
+- Absolute 30-day expiration + invalidate if unused for 7 days
+- Automatically logs out abandoned sessions
+- Best for: Compliance-heavy environments
+
+### 2.3 Access Token Generation
+
+**Token Characteristics**
+- Lifetime: 15 minutes (non-renewable, must use refresh token)
+- Algorithm: Same as refresh tokens (RS256 or EdDSA)
+- Claims Minimal Set:
+  ```
+  sub: user_id
+  exp: expiration timestamp (iat + 15 minutes)
+  iat: issued at timestamp
+  jti: unique identifier (for emergency revocation)
+  roles: ["user", "premium", "admin"] (authorization)
+  permissions: ["read:documents", "write:documents"] (fine-grained)
+  ```
+
+**Claim Synchronization Strategy**
+- **Problem**: User promoted to admin mid-session, but access token still shows "user" role
+- **Solution Options**:
+  
+  *Option 1: Accept Staleness (Recommended)*
+  - Access token claims lag up to 15 minutes
+  - Simpler implementation, acceptable for most use cases
+  - Critical operations re-verify against database
+  
+  *Option 2: Redis Cache Invalidation*
+  - Store permission hash in Redis keyed by user_id
+  - On access token validation, compare embedded hash to current hash
+  - If mismatch, reject token and force refresh
+  - More complex but provides immediate permission changes
+  
+  *Option 3: Version Claims*
+  - Include `permissions_version: 5` in access token
+  - Increment version on any permission change
+  - Middleware checks version, rejects if outdated
+
+**Emergency Revocation**
+- Server maintains Redis set `revoked_access_tokens:{jti}` for emergency invalidation
+- TTL = access token's remaining lifetime
+- Used only for: Account compromise, privilege escalation bugs, security incidents
+- Performance impact: Adds 1 Redis lookup per API request (acceptable for emergencies)
+
+### 2.4 API Endpoints
+
+**POST /api/auth/login**
+- **Input**: `{ email, password, remember_me?, device_name? }`
+- **Validation**: Rate limit 5 attempts/15 minutes per IP, credential verification
+- **Success Flow**:
+  1. Authenticate credentials against database
+  2. Create Django session with `session.cycle_key()` (fixation protection)
+  3. Store device fingerprint in session metadata
+  4. Generate refresh token and store in Redis
+  5. Generate initial access token
+  6. Set session cookie (SameSite=Lax, 2-hour expiration)
+  7. Set refresh token cookie (SameSite=Strict, Path=/api/auth/refresh, 30-day expiration)
+  8. Return `{ access_token, user: { id, email, name, roles }, expires_in: 900 }`
+- **Failure**: Return 401 with generic error (prevent user enumeration)
+- **Audit**: Log all attempts (success and failure) with IP, User-Agent, timestamp
+
+**POST /api/auth/refresh**
+- **Input**: Refresh token from HttpOnly cookie
+- **CSRF Protection** (Critical):
+  - Require `X-CSRF-Token` header matching CSRF cookie value (double-submit pattern)
+  - OR require `X-Requested-With: XMLHttpRequest` custom header
+  - Validate Origin/Referer headers match expected domain
+- **Validation Flow**:
+  1. Extract jti from refresh token JWT
+  2. Verify signature and expiration
+  3. Check Redis: Token in active set AND not blacklisted
+  4. If session-coupled mode: Verify associated session still valid
+  5. Perform anomaly detection (IP change, User-Agent change)
+- **Success Flow**:
+  1. Blacklist old refresh token jti
+  2. Generate new refresh token (rotated)
+  3. Generate new access token
+  4. Set new refresh token cookie
+  5. Return `{ access_token, expires_in: 900 }`
+- **Reuse Detection**: If blacklisted token presented, invalidate token family and return 401
+- **Rate Limiting**: 10 refreshes per hour per refresh token jti
+- **Concurrent Request Handling**:
+  - Implement 5-second grace period where old refresh token remains valid after rotation
+  - Track in-flight refresh requests by session_id
+  - Allow multiple concurrent requests with same pre-rotation token
+  - After grace period, strict rotation enforcement
+
+**POST /api/auth/logout**
+- **Input**: Session cookie + refresh token cookie
+- **Scope Parameter**: `?scope=current` (this device only) or `?scope=all` (all devices)
+- **Current Device Logout**:
+  1. Blacklist current refresh token jti
+  2. Delete Django session
+  3. Clear session and refresh token cookies
+  4. Return 200
+- **All Devices Logout**:
+  1. Query all refresh tokens for user_id from Redis
+  2. Blacklist all refresh token jtis
+  3. Delete all user sessions
+  4. Send email notification: "Logged out of all devices"
+  5. Return 200
+- **Audit**: Log logout event with scope, device_id, timestamp
+
+**GET /api/auth/me**
+- **Input**: Session cookie OR valid access token in Authorization header
+- **Purpose**: Fetch user profile for SSR hydration, client initialization
+- **Response**: `{ id, email, name, roles, permissions, preferences, created_at }`
+- **Caching**: Cache for 5 minutes keyed by user_id (invalidate on profile update)
+- **Performance**: Should complete in <50ms (includes database query)
+
+**GET /api/auth/sessions** (Optional - Device Management)
+- **Input**: Valid access token
+- **Response**: List of active sessions/refresh tokens
+  ```
+  {
+    sessions: [
+      {
+        device_id: "chrome_macos_abc123",
+        device_name: "Work Laptop",
+        ip_address: "192.168.1.100",
+        created_at: "2025-01-01T10:00:00Z",
+        last_active: "2025-01-15T14:30:00Z",
+        is_current: true
+      }
+    ]
+  }
+  ```
+- **Use Case**: "Active Sessions" UI, "Revoke Other Sessions" feature
+
+**POST /api/auth/revoke-session** (Optional)
+- **Input**: `{ device_id }` + valid access token
+- **Action**: Blacklist specified refresh token, delete associated session
+- **Security**: Prevent users from revoking their current session accidentally
+
+### 2.5 CORS & CSRF Configuration
+
+**CORS Settings**
+```
+CORS_ALLOWED_ORIGINS = ['https://app.yourdomain.com', 'https://yourdomain.com']
+CORS_ALLOW_CREDENTIALS = True (required for cookies)
+CORS_EXPOSE_HEADERS = ['Content-Length', 'X-Total-Count']
+CORS_ALLOW_HEADERS = ['Authorization', 'Content-Type', 'X-CSRF-Token', 'X-Requested-With']
+```
+
+**CSRF Protection Strategy**
+- **Session Cookie Routes**: Standard Django CSRF middleware
+- **Refresh Token Route** (/api/auth/refresh):
+  - Double-Submit Cookie Pattern:
+    1. Login sets non-HttpOnly `csrf_token` cookie
+    2. Client JavaScript reads `csrf_token`, sends in `X-CSRF-Token` header
+    3. Server validates cookie value matches header value
+    4. Works because attackers can't read cookies cross-origin
+  - OR Custom Header Requirement:
+    1. Require `X-Requested-With: XMLHttpRequest` header
+    2. CORS doesn't allow cross-origin requests to add custom headers without preflight
+    3. Simpler but slightly less secure
+- **Access Token Routes**: No CSRF needed (stateless, no cookies involved)
+
+**Trusted Origins**
+```
+CSRF_TRUSTED_ORIGINS = [
+  'https://app.yourdomain.com',
+  'https://yourdomain.com'
+]
+SESSION_COOKIE_DOMAIN = '.yourdomain.com' (allows subdomain sharing)
+```
+
+### 2.6 Security Hardening
+
+**Rate Limiting (Per Endpoint)**
+- `/api/auth/login`: 5 attempts per 15 minutes per IP address
+- `/api/auth/refresh`: 10 refreshes per hour per refresh token jti
+- `/api/auth/logout`: 10 requests per minute per user (prevent logout spam)
+- Global: 100 requests per minute per IP across all auth endpoints
+
+**Anomaly Detection**
+- **Trigger Conditions**:
+  - IP address changes between refresh requests
+  - User-Agent changes between refresh requests
+  - Geolocation jump >500 miles in <1 hour
+  - Refresh token used from 2+ IPs simultaneously
+- **Actions**:
+  - Log security event with full context
+  - Send email notification to user
+  - Optionally: Require re-authentication with 2FA
+  - Optionally: Invalidate session and require password reset
+
+**Device Fingerprinting**
+- **Computation**: `hash(User-Agent + Accept-Language + Screen-Resolution + Timezone-Offset)`
+- **Storage**: Store in session metadata and refresh token claims
+- **Validation**: Compare on each refresh request
+- **Limitations**: Not foolproof (browsers can spoof), use as signal not blocker
+
+**Password Reset & Email Verification**
+- **Separate Token System**: Time-limited, single-use tokens outside session/refresh/access flow
+- **Storage**: Database table with indexed token column, TTL = 1 hour
+- **Security**: 
+  - Generate with cryptographically secure random (32 bytes)
+  - Hash before storing (prevent database dump exploitation)
+  - Invalidate all tokens on successful use or password change
+- **Post-Reset Actions**:
+  - Invalidate all refresh tokens (force re-login on all devices)
+  - Delete all sessions
+  - Send notification email to all registered email addresses
+
+### 2.7 Observability & Monitoring
+
+**Metrics to Track**
+- Authentication success/failure rate by endpoint
+- Session duration distribution (percentiles: p50, p95, p99)
+- Refresh token rotation events per minute
+- Reuse detection incidents per day
+- Access token generation latency (target: <10ms)
+- Redis operations latency (GET, SET, DEL)
+- 401 error spike detection (sign of mass logout or attack)
+
+**Structured Logging**
+Every auth event includes:
+```
+{
+  event_type: "login" | "refresh" | "logout" | "reuse_detected",
+  user_id: "user_123",
+  session_id: "sess_abc",
+  refresh_token_jti: "rt_xyz" (hash for privacy),
+  device_id: "device_hash",
+  ip_address: "192.168.1.100",
+  user_agent: "Mozilla/5.0...",
+  timestamp: "2025-01-16T10:30:00Z",
+  success: true,
+  error_code: null | "invalid_token" | "reuse_detected",
+  latency_ms: 45
+}
+```
+
+**Alerting Thresholds**
+- Reuse detection >5 incidents per hour → Security team alert
+- Refresh token rotation failure rate >1% → Engineering page
+- 401 spike >3x baseline → Investigate mass logout event
+- Redis latency >50ms → Check cluster health
+
+**Audit Trail (Compliance)**
+- Retain authentication logs for 90 days (GDPR) to 7 years (SOC2/HIPAA)
+- Store in append-only datastore (S3 Glacier, TimescaleDB)
+- Include: All login attempts, permission changes, data access, logout events
+- Provide export API for compliance audits
+
+---
+
+## 3. Frontend Architecture (Next.js)
+
+### 3.1 Server-Side Components & Rendering
+
+**Authentication Strategy for RSC**
+- **Purpose**: Prevent "flash of unauthenticated content", enable SEO for user-specific pages
+- **Mechanism**: Server components access session cookie directly via `headers()` utility
+- **Flow**:
+  1. Extract session cookie from request headers
+  2. Forward to Django `/api/auth/me` with cookie attached
+  3. If valid: Render authenticated layout with user data
+  4. If invalid: Render public layout or redirect to /login
+  5. Pass auth status as prop to Client Components
+
+**Implementation Patterns**
+
+*Pattern 1: Auth Check in Layout*
+```
+Server layout.tsx:
+- Check session cookie presence
+- If present: Fetch user from /api/auth/me
+- Pass user to client AuthProvider
+- Client hydrates Zustand store with server-provided user
+```
+
+*Pattern 2: Route-Level Protection*
+```
+Server page.tsx for /dashboard:
+- Call getAuthenticatedUser() helper
+- If null: redirect('/login')
+- If valid: Render page with user data
+```
+
+*Pattern 3: Middleware Pre-Check*
+```
+Next.js middleware.ts:
+- Runs before route handlers
+- Checks for session OR refresh token cookie
+- Redirects unauthenticated users before rendering
+```
+
+**Hydration Mismatch Prevention**
+- Server determines initial auth state authoritatively
+- Client receives auth status as prop, doesn't compute independently
+- Use `<Suspense>` boundaries during client-side token refresh
+- Show skeleton/spinner while client calls `/api/auth/refresh` on mount
+- Never conditionally render different content server vs. client
+
+**SEO & Performance**
+- Authenticated pages fully rendered server-side (no blank states)
+- User-specific content (name, dashboard data) available on first paint
+- Time to First Byte (TTFB) target: <200ms including auth check
+- Use Next.js data cache for `/api/auth/me` responses (5-minute TTL)
+
+### 3.2 Client-Side State Management (Zustand)
+
+**Store Structure**
+```
+AuthStore {
+  // State
+  user: User | null
+  accessToken: string | null
+  isLoading: boolean
+  error: Error | null
+  lastRefreshTime: number
+  refreshPromise: Promise | null (singleton for deduplication)
+  
+  // Computed
+  isAuthenticated: boolean (user !== null && accessToken !== null)
+  isTokenExpiringSoon: boolean (exp - now < 60 seconds)
+  tokenExpiresAt: number (decoded from JWT)
+  
+  // Actions
+  initializeAuth: () => Promise<void>
+  refreshAccessToken: () => Promise<void>
+  logout: (scope: 'current' | 'all') => Promise<void>
+  updateUser: (user: User) => void
+  clearAuth: () => void
+  
+  // Internal
+  _setAccessToken: (token: string) => void
+  _setUser: (user: User) => void
+  _setLoading: (loading: boolean) => void
+  _setError: (error: Error | null) => void
+}
+```
+
+**Action Implementations**
+
+*initializeAuth (Called on App Mount)*
+```
+Flow:
+1. Set isLoading = true
+2. Call /api/auth/refresh (uses refresh token cookie)
+3. On success:
+   - Decode JWT, extract user_id and expiration
+   - Store access token in memory
+   - Set user data (if not already provided by server)
+   - Schedule proactive refresh at exp - 60 seconds
+   - Broadcast 'AUTH_INITIALIZED' event
+4. On failure (401):
+   - Clear all auth state
+   - Redirect to /login
+5. Set isLoading = false
+```
+
+*refreshAccessToken (Singleton Pattern)*
+```
+Flow:
+1. Check if refreshPromise already exists (concurrent call prevention)
+2. If exists: Return existing promise
+3. If not:
+   - Create new promise
+   - Call /api/auth/refresh
+   - On success: Update access token, schedule next refresh
+   - On failure: Clear auth, redirect to /login
+   - Clear refreshPromise on completion (success or failure)
+   - Return promise
+4. Broadcast 'TOKEN_REFRESHED' with new token
+```
+
+*logout*
+```
+Flow:
+1. Call /api/auth/logout?scope={scope}
+2. Broadcast 'LOGOUT' event (other tabs listen)
+3. Clear Zustand store: user = null, accessToken = null
+4. Cancel scheduled refresh timers
+5. Redirect to /login
+6. Optionally: Clear client-side caches (React Query, SWR)
+```
+
+**Token Expiration Handling**
+- **Proactive Refresh**: `setTimeout()` triggers refresh at `tokenExpiresAt - 60000` (1 minute before expiration)
+- **Reactive Refresh**: Axios/Fetch interceptor catches 401 responses, attempts refresh, retries original request
+- **Scheduling**: On each token refresh, cancel old timer and schedule new one
+
+**Storage Policy (Security Critical)**
+- NEVER use `localStorage` or `sessionStorage` for tokens
+- Access token stored ONLY in Zustand's in-memory state
+- Page refresh naturally clears token (by design)
+- User must re-authenticate via refresh token cookie on hard reload
+
+### 3.3 Multi-Tab Synchronization
+
+**Primary Mechanism: BroadcastChannel API**
+
+**Channel Setup**
+```
+Channel Name: 'auth-channel'
+Supported Events:
+  - REFRESH_STARTING: One tab initiated token refresh
+  - REFRESH_COMPLETE: New access token available
+  - LOGOUT: User logged out in another tab
+  - LOGIN: User logged in in another tab
+  - TOKEN_EXPIRED: Server session ended
+```
+
+**Event Message Structure**
+```
+{
+  type: 'REFRESH_COMPLETE' | 'LOGOUT' | 'LOGIN' | 'TOKEN_EXPIRED',
+  payload: {
+    accessToken?: string (for REFRESH_COMPLETE),
+    userId?: string,
+    timestamp: number (milliseconds since epoch)
+  },
+  senderId: string (tab identifier to prevent echo)
+}
+```
+
+**Event Handlers by Type**
+
+*REFRESH_STARTING*
+```
+Receiving tabs:
+1. Pause any pending API requests
+2. Wait up to 5 seconds for REFRESH_COMPLETE
+3. If timeout: Initiate own refresh (failsafe)
+```
+
+*REFRESH_COMPLETE*
+```
+Receiving tabs:
+1. Verify timestamp is newer than current token's issuance
+2. Update local accessToken in Zustand
+3. Decode JWT to update tokenExpiresAt
+4. Resume paused API requests
+5. Schedule next proactive refresh
+```
+
+*LOGOUT*
+```
+Receiving tabs:
+1. Check for dirty forms (unsaved data)
+2. If dirty: Show modal "Session ended. Log in to save work."
+3. If not dirty: Clear auth state immediately
+4. Cancel all scheduled refresh timers
+5. Redirect to /login
+6. Clear React Query/SWR caches
+```
+
+*LOGIN*
+```
+Receiving tabs:
+1. Call refreshAccessToken() to get own access token
+2. Redirect to intended destination (from URL param or /dashboard)
+```
+
+*TOKEN_EXPIRED*
+```
+Receiving tabs:
+1. Clear auth state
+2. Show toast: "Session expired. Please log in."
+3. Redirect to /login
+```
+
+**Timestamp-Based Conflict Resolution**
+- Problem: Tab A broadcasts "LOGOUT" at 10:00:00, Tab B broadcasts "REFRESH_COMPLETE" at 9:59:59 but arrives second due to network delay
+- Solution: Compare message timestamps, not arrival order
+- If LOGOUT timestamp > REFRESH_COMPLETE timestamp, LOGOUT wins
+- Prevents stale "refresh" messages from overriding newer "logout" signals
+
+**Fallback: localStorage Events (Safari <15.4)**
+```
+Mechanism:
+- Primary tab writes to localStorage: authState = { event, payload, timestamp }
+- Other tabs listen to 'storage' event
+- Parse event and dispatch to same handlers as BroadcastChannel
+
+Limitations:
+- Slower (localStorage writes are synchronous)
+- Doesn't work across incognito/normal windows
+- Use only as graceful degradation
+```
+
+**Tab Lifecycle Management**
+- Each tab generates unique ID on load: `crypto.randomUUID()`
+- Messages include senderId to prevent echo (tab ignores own messages)
+- On tab close: No cleanup needed (channel auto-unsubscribes)
+
+### 3.4 Focus Verification (Heartbeat System)
+
+**Purpose**: Detect "ghost sessions" where tab appears authenticated but server session/refresh token expired
+
+**Trigger Conditions**
+- `visibilitychange` event fires (tab becomes visible)
+- AND `lastCheckTimestamp > 60 seconds ago`
+- Throttling prevents excessive checks when rapidly switching tabs
+
+**Verification Flow**
+```
+On tab focus:
+1. Check Date.now() - lastCheckTimestamp
+2. If < 60000ms: Skip check (too recent)
+3. If >= 60000ms:
+   - Call /api/auth/refresh
+   - On success: Update access token, reset lastCheckTimestamp
+   - On 401 (session expired):
+     - Clear auth state
+     - Broadcast 'TOKEN_EXPIRED' event
+     - Redirect to /login with ?session_expired=true
+   - Reset lastCheckTimestamp = Date.now()
+```
+
+**Edge Case: Laptop Sleep/Wake**
+```
+Scenario:
+- User closes laptop at 2 PM (all tabs suspended)
+- Refresh token still valid (expires in 10 days)
+- Session expired (2-hour TTL)
+- User opens laptop at 10 PM (8 hours later)
+
+Expected Behavior:
+- Tab regains focus, triggers verification
+- Calls /api/auth/refresh with valid refresh token
+- Server checks: Session expired but refresh token valid
+- Decision point depends on session-token coupling strategy:
+  
+  Option A (Strict Binding):
+  - Reject refresh, return 401
+  - User forced to re-login
+  
+  Option B (Session Recreation):
+  - Accept refresh token
+  - Auto-create new session
+  - Return new access token
+  - Seamless UX
+  
+  Option C (Time-Based):
+  - If session expired <24 hours ago: Allow refresh
+  - If >24 hours: Require re-login
+```
+
+**Self-Healing System**
+- Even if LOGOUT broadcast was missed (tab in deep sleep), focus verification catches stale state
+- System "heals" by forcing re-authentication on next user interaction
+- Prevents user from operating with ghost session for extended periods
+
+**Performance Optimization**
+- Throttle to 60-second minimum interval
+- Debounce rapid focus events (user switching tabs quickly)
+- Use lightweight HEAD request or cached response if possible
+- Cancel in-flight verification if user navigates away
+
+### 3.5 Request Interceptors (Axios/Fetch)
+
+**Purpose**: Automatically handle token expiration, refresh, and retry failed requests
+
+**Interceptor Architecture**
+
+*Request Interceptor*
+```
+Before each request:
+1. Check if access token exists in Zustand
+2. If exists: Add Authorization: Bearer {token} header
+3. If missing: Block request, attempt refresh, retry with new token
+4. Attach request ID for tracing
+```
+
+*Response Interceptor*
+```
+On response:
+1. If 200-299: Return response as-is
+2. If 401:
+   - Check error code in response body
+   - If 'token_expired':
+     a. Check if refresh already in progress (singleton pattern)
+     b. If yes: Queue this request, await refresh completion
+     c. If no: Initiate refresh
+     d. On refresh success: Retry original request with new token
+     e. On refresh failure: Clear auth, redirect to /login
+   - If 'token_reuse_detected':
+     a. Clear all auth state immediately
+     b. Show security warning modal
+     c. Redirect to /login
+     d. Optionally: Force password reset
+3. If 403: Permission denied, don't retry (show error to user)
+4. If 5xx: Retry with exponential backoff (network issue, not auth)
+```
+
+**Request Queue Pattern**
+```
+Problem: Multiple requests fail with 401 simultaneously
+
+Solution:
+1. First failed request initiates token refresh
+2. Subsequent failed requests added to queue
+3. Queue blocks until refresh completes
+4. On refresh success: Replay all queued requests with new token
+5. On refresh failure: Reject all queued requests, redirect to login
+
+Implementation:
+- Maintain array of { request, resolve, reject } objects
+- Refresh promise completion triggers queue processing
+- Maximum queue size: 50 requests (prevent memory leak)
+```
+
+**Idempotency Handling**
+- POST/PUT/PATCH requests include `X-Idempotency-Key` header (UUID)
+- Server caches response for 24 hours keyed by idempotency key
+- Retried request with same key returns cached response (prevents duplicate operations)
+- Critical for: Payment processing, form submissions, state changes
+
+**Race Condition: Token Expiry Mid-Request**
+```
+Timeline:
+- 10:14:50 - User submits form (token expires in 10 seconds)
+- 10:14:58 - Request reaches server (token still valid)
+- 10:15:02 - Token expires while server processing
+- 10:15:05 - Server responds with 401 (token expired)
+
+Handling:
+1. Interceptor catches 401
+2. Refreshes token (gets new 15-minute token)
+3. Retries original request with new token
+4. Includes X-Idempotency-Key to prevent duplicate submission
+5. Server processes or returns cached response
+```
+
+### 3.6 Next.js Middleware
+
+**Purpose**: Route-level authentication enforcement before page rendering
+
+**Middleware Scope**
+```
+Matcher: [
+  '/dashboard/:path*',
+  '/settings/:path*',
+  '/api/protected/:path*'
+]
+Excluded: [
+  '/',
+  '/login',
+  '/signup',
+  '/forgot-password',
+  '/api/auth/:path*' (public auth endpoints)
+]
+```
+
+**Authentication Check Logic**
+```
+For Page Routes:
+1. Check for session cookie OR refresh token cookie
+2. If neither exists: redirect('/login?from=' + request.url)
+3. If session cookie exists: Allow through (fast path)
+4. If only refresh token exists:
+   - This is edge case (session expired but refresh token valid)
+   - Allow through (client will refresh on mount)
+   - OR call /api/auth/verify (slower but more secure)
+
+For API Routes:
+1. Extract Authorization header
+2. Verify JWT signature using public key
+3. Check expiration
+4. If valid: Attach user_id to request context
+5. If invalid: Return 401 without rendering route handler
+```
+
+**Performance Considerations**
+- Middleware runs on Edge Runtime (minimal latency)
+- Session cookie check is synchronous (no network call)
+- For high-security routes: Add `/api/auth/verify` call (adds ~20ms)
+- Cache verification results in middleware memory (edge limitations apply)
+
+**Security Enhancement: Role-Based Routing**
+```
+Advanced pattern:
+1. Middleware calls /api/auth/me (cached response)
+2. Extracts user roles from response
+3. Enforces role requirements per route:
+   - /admin/* requires 'admin' role
+   - /moderator/* requires 'moderator' or 'admin'
+   - /premium/* requires 'premium' subscription
+4. If unauthorized: redirect('/unauthorized') instead of /login
+```
+
+### 3.7 User Experience & UI Components
+
+**AuthGuard Component**
+```
+Purpose: Show loading state during initial auth check
+
+Implementation:
+- Wraps entire app or specific routes
+- On mount: Checks if initializeAuth completed
+- While loading: Show skeleton/spinner (prevents layout shift)
+- On success: Render children with auth context
+- On failure: Redirect to /login
+
+Props:
+- fallback: React component to show while loading
+- requiredRole?: string (optional role enforcement)
+- redirectTo?: string (custom redirect on failure)
+```
+
+**Dirty Form Detection**
+```
+Integration with React Hook Form:
+import { useFormState } from 'react-hook-form'
+
+On

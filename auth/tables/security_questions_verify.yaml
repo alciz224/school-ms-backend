@@ -1,0 +1,34 @@
+# POST
+Description: Vérifier réponses (pour récupération compte)
+Auth Required: Non
+
+Request:
+  Body:
+    identifier: string # Email ou phone
+    answers:
+      - order: 1
+        answer: string
+      - order: 2
+        answer: string
+
+Response Success (200):
+  {
+    "success": true,
+    "message": "Vérification réussie",
+    "data":
+      {
+        "reset_token": "temporary-token-for-password-reset",
+        "expires_in": 600,
+      },
+  }
+
+Response Error (400):
+  {
+    "success": false,
+    "message": "Réponses incorrectes",
+    "error":
+      {
+        "code": "SECURITY_ANSWERS_INVALID",
+        "details": { "attempts_remaining": 2 },
+      },
+  }

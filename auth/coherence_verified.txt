@@ -1,0 +1,27 @@
+✅ COHÉRENCE MODELS ↔ API
+━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CustomUser
+├── id (UUID)                    → Exposé dans toutes les réponses user
+├── email (nullable, unique)     → Géré par register, login, me/email
+├── phone (nullable, unique)     → Géré par register, login, me/phone  
+├── first_name                   → Géré par register, PATCH me
+├── last_name                    → Géré par register, PATCH me
+├── email_verified               → Exposé dans verification status
+├── phone_verified               → Exposé dans verification status
+├── backup_phone                 → Géré par PATCH me
+├── backup_phone_owner           → Géré par PATCH me
+├── security_score (property)    → Calculé et exposé
+└── is_verified (property)       → Exposé partout
+
+SecurityQuestion
+├── question                     → Géré par security/questions/
+├── answer_hash                  → Jamais exposé (sécurité)
+└── order                        → Géré par setup/verify
+
+VerificationCode
+├── code                         → Envoyé par verify/send, vérifié par verify/confirm
+├── type                         → email | phone
+├── purpose                      → verify | reset
+├── expires_at                   → Exposé comme expires_in
+└── attempts                     → Exposé comme attempts_remaining

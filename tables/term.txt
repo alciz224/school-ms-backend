@@ -1,0 +1,100 @@
+Étape 1 – Table : Term
+
+
+---
+
+1. Rôle métier
+
+Term représente une période pédagogique abstraite correspondant à un TermType.
+
+Il sert à :
+
+découper une année académique selon la structure (trimestre, semestre, etc.)
+
+nommer les périodes pédagogiques (ex. T1, T2, S1)
+
+être référencé par les évaluations et le planning
+
+
+⚠️ Term reste abstrait : pas de dates spécifiques, pas d’école assignée.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+term_type_id	FK → TermType	oui	Type de découpage associé
+code	string	oui	Code court (T1, T2, S1…)
+name	string	non	Nom lisible (Trimestre 1, Semestre 1…)
+order	int	oui	Position dans le TermType (1..n)
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → User	non	Audit
+updated_by	FK → User	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → User	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+(term_type_id, code) UNIQUE
+
+(term_type_id, order) UNIQUE
+
+
+Contraintes logiques
+
+order > 0 et order <= term_type.period_count
+
+un Term ne peut pas être supprimé physiquement si utilisé dans des évaluations futures
+
+
+
+---
+
+4. Logiques métier (règles)
+
+Term est abstrait et global, partagé entre écoles
+
+Les dates et états spécifiques sont gérés par SchoolYearCycleTerm
+
+Toute modification ou suppression doit vérifier l’absence de dépendances dans les évaluations
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans Term
+
+❌ Dates de début/fin ❌ Référence directe à une école ou une année scolaire ❌ Statut actif/inactif ❌ Affectation de professeurs ou de classes
+
+
+---
+
+6. Dépendances
+
+Utilisé par : SchoolYearCycleTerm, CycleAssessment (indirectement)
+
+Dépend de : TermType
+
+
+
+---
+
+7. Validation Étape 0
+
+✅ Table MASTER abstraite, stable et conforme aux règles globales ✅ Pas de redondance, pas de logique temporelle concrète
+
+
+---
+
+Table Term validée.

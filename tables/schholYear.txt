@@ -1,0 +1,105 @@
+Étape 3 – Table : SchoolYear
+
+
+---
+
+1. Rôle métier
+
+SchoolYear représente une année scolaire spécifique pour une école.
+
+Il sert à :
+
+définir la période pédagogique pour une école (ex. 2024-2025)
+
+lier les cycles, niveaux, matières, classes et évaluations pour cette année
+
+contrôler la cohérence des inscriptions et affectations d’utilisateurs
+
+
+⚠️ SchoolYear dépend de School, mais reste indépendant des cycles MASTER.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+school_id	FK → School	oui	École associée
+start_date	date	oui	Date de début de l'année scolaire
+end_date	date	oui	Date de fin de l'année scolaire
+name	string	oui	Nom lisible (ex. Lycée Filima 2024-2025)
+status	enum	oui	Statut : CURRENT / FUTURE / ARCHIVE
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → CustomUser	non	Audit
+updated_by	FK → CustomUser	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → CustomUser	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+(school_id, name) UNIQUE
+
+(school_id, start_date, end_date) UNIQUE
+
+
+Contraintes logiques
+
+Une école ne peut avoir qu’une seule année scolaire CURRENT à la fois
+
+Les dates doivent être cohérentes (start_date < end_date)
+
+Une année scolaire ne peut pas être supprimée si elle a des cycles, niveaux ou inscriptions associés
+
+
+
+---
+
+4. Logiques métier (règles)
+
+Chaque SchoolYear est associée à un School
+
+Elle sert de conteneur pour SchoolYearCycle, SchoolYearLevel, Classroom, et inscriptions
+
+Permet de gérer les années passées, en cours et futures de manière uniforme
+
+Toute modification doit vérifier les dépendances sur classes, enseignants et élèves
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans SchoolYear
+
+❌ Écoles (déjà référencées) ❌ Classes ou enseignants directs ❌ Évaluations spécifiques (gérées dans les tables d’évaluation)
+
+
+---
+
+6. Dépendances
+
+Utilisé par : SchoolYearCycle, SchoolYearLevel, Classroom, StudentEnrollment, TeacherAssignment
+
+Dépend de : School
+
+
+
+---
+
+7. Validation Étape 3
+
+✅ Table spécifique à l’application ✅ Références cohérentes avec School et futurs cycles/niveaux ✅ Gestion de statut CURRENT/FUTURE/ARCHIVE pour l’année scolaire
+
+
+---
+
+Table SchoolYear validée.

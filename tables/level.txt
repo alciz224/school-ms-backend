@@ -1,0 +1,103 @@
+Étape 1 – Table : Level
+
+
+---
+
+1. Rôle métier
+
+Level représente un niveau pédagogique spécifique dans un cycle donné.
+
+Il sert à :
+
+structurer les classes et matières
+
+référencer les évaluations et l’emploi du temps
+
+être utilisé par plusieurs écoles via SchoolYearLevel
+
+
+⚠️ Level est un référentiel global, abstrait et partagé entre écoles.
+
+
+---
+
+2. Champs proposés
+
+Champ	Type	Obligatoire	Description
+
+id	PK	oui	Identifiant unique
+code	string	oui	Code court (ex. 1A, 12SS, TER_SM)
+name	string	oui	Nom lisible (1ère année, 12ème SS, Terminale SM)
+cycle_id	FK → Cycle	oui	Cycle associé
+track_id	FK → Track	non	Filtre optionnel si le cycle a des options
+order	int	oui	Ordre dans le cycle (ex. 1..n)
+created_at	datetime	oui	Audit
+updated_at	datetime	oui	Audit
+created_by	FK → User	non	Audit
+updated_by	FK → User	non	Audit
+is_deleted	boolean	oui	Soft delete
+deleted_at	datetime	non	Soft delete
+deleted_by	FK → User	non	Soft delete
+
+
+
+---
+
+3. Contraintes
+
+Unicité
+
+(cycle_id, code) UNIQUE
+
+(cycle_id, name) UNIQUE
+
+
+Contraintes logiques
+
+track_id obligatoire seulement si cycle.has_track = true
+
+order doit être cohérent avec les autres niveaux du cycle
+
+une fois créé, ne pas supprimer physiquement s’il est utilisé par des SchoolYearLevel
+
+
+
+---
+
+4. Logiques métier (règles)
+
+Level est global et partagé entre écoles
+
+Permet de créer des Classroom et SchoolYearLevel
+
+Toute modification doit vérifier les dépendances dans les niveaux scolaires actifs et évaluations
+
+
+
+---
+
+5. Ce qu’on ne met PAS dans Level
+
+❌ Référence directe à une école ou année scolaire ❌ Statut actif/inactif (géré dans SchoolYearLevel) ❌ Dates pédagogiques ❌ Professeurs ou classes
+
+
+---
+
+6. Dépendances
+
+Utilisé par : SchoolYearLevel, Classroom, LevelSubject (Matière du niveau)
+
+Dépend de : Cycle, éventuellement Track
+
+
+
+---
+
+7. Validation Étape 0
+
+✅ Table MASTER stable, abstraite et globale ✅ Conforme aux règles globales ✅ Pas de redondance ni de logique temporelle
+
+
+---
+
+Table Level validée.
