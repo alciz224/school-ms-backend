@@ -372,6 +372,16 @@ __all__ = ["{Model}ViewSet"]
 
 ---
 
+## Decision Guide (Quick)
+
+- **Write / business rules:** `services/`
+- **Read / query composition:** `selectors/`
+- **HTTP validation + shape:** `api/serializers/`
+- **Transactions / concurrency-sensitive workflows:** service methods with `transaction.atomic` (and `select_for_update` when needed)
+- **Consistent API errors:** use shared exceptions in `domain/shared/exceptions.py`
+
+(Full details in `DOMAIN_MODEL_IMPLEMENTATION_GUIDE.md` → Section 16.)
+
 ## Common Patterns
 
 ### Status/Choice Constants

@@ -372,6 +372,16 @@ domain/{domain}/
 
 ---
 
+## 🔥 Advanced Patterns (Team Scale)
+
+If you’re implementing workflow-heavy or cross-domain features, see:
+- `DOMAIN_MODEL_IMPLEMENTATION_GUIDE.md` → **Section 16: Advanced & Team-Scale Patterns**
+  - Responsibility matrix (where logic goes)
+  - Cross-domain interaction rules
+  - Transactions + concurrency guidance
+  - Exception taxonomy + API mapping
+  - Testing checklist
+
 ## 📞 Support & Contribution
 
 ### When You Need Help

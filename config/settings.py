@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     "domain.geography",
     "domain.academic",
     "domain.school_operations",
+    "domain.enrollment",
+    "domain.assessment",
     # Portal apps
     "portal.school_admin",
     "portal.system_admin",

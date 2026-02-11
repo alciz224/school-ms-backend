@@ -111,3 +111,20 @@ GUINEA_SCHOOL_SETTINGS = {
         }
     }
 }
+
+
+# Django models TextChoices for new models
+from django.db import models
+
+
+class SchoolYearTeacherStatus(models.TextChoices):
+    """Status for teacher assignment to a school year."""
+    ACTIVE = "ACTIVE", "Active"
+    SUSPENDED = "SUSPENDED", "Suspended"
+    LEFT = "LEFT", "Left"
+
+
+class TimeSlotStatus(models.TextChoices):
+    """Status for time slots."""
+    ACTIVE = "ACTIVE", "Active"
+    INACTIVE = "INACTIVE", "Inactive"

@@ -2363,6 +2363,121 @@ class {Model}ViewSet(viewsets.ModelViewSet):
 
 ---
 
+## 16. Advanced & Team-Scale Patterns
+
+This section clarifies edge-cases that come up as the codebase grows (without changing the core structure).
+
+### 16.1 Responsibility Matrix (Where Does This Logic Go?)
+
+Use this decision guide to keep layers consistent:
+
+| Concern | Put it in | Notes |
+|---|---|---|
+| Pure data constraints (required fields, simple ranges) | Model field definitions | Prefer DB constraints when possible (`unique`, `CheckConstraint`). |
+| Cross-field validation on a single model | `Model.clean()` | Keep it deterministic and free of side effects (no external calls). |
+| Business rules that depend on current state / workflow transitions | Service methods | Example: `activate()`, `close()`, `set_current()`. |
+| Anything that touches multiple models / multiple rows | Service methods + `transaction.atomic` | Keep write orchestration in services. |
+| Read/query composition (filtering, annotations, prefetching) | Selectors | Views should call selectors, not build query logic. |
+| HTTP validation/shape (required request fields, types) | Serializers | Keep serializer validation limited to request concerns; delegate business rules to services. |
+| Permission rules tied to roles | `api/permissions.py` | Keep domain-specific permissions close to the API layer. |
+| Side effects (emails/SMS, audit events, background jobs) | Service (or explicit domain event) | Avoid doing this in models/signals unless you have a clear convention. |
+
+**Rule of thumb:** if it’s not strictly about request/response formatting, it likely does not belong in views/serializers.
+
+### 16.2 Cross-Domain Interaction Rules
+
+This project is organized as bounded contexts (`domain/account`, `domain/academic`, etc.). To prevent tight coupling:
+
+- **Preferred:** a service in Domain A calls a **selector/service** in Domain B (not raw query logic in views).
+- **Avoid:** importing Domain B models directly inside Domain A services unless the relationship is explicit and stable.
+- **Keep boundaries clear:** cross-domain operations should be orchestrated in a single “owning” service (the domain that owns the business rule).
+
+**Example (recommended):**
+
+```python
+# Domain A service
+from domain.geography.selectors import LocalitySelector
+
+locality = LocalitySelector.get_by_id(obj_id=locality_id)
+if not locality:
+    raise NotFoundException(resource_type="Locality", resource_id=locality_id)
+```
+
+### 16.3 Transactions, Concurrency, and "Single-Active" Rules
+
+Use transactions for any operation that:
+- updates multiple fields with an invariant (e.g. status transitions),
+- updates multiple rows (e.g. “only one is current”),
+- creates related rows in a single workflow.
+
+Patterns:
+
+1) **Atomic multi-step write**
+
+```python
+from django.db import transaction
+
+@staticmethod
+@transaction.atomic
+def set_current(*, obj: Model, user=None) -> Model:
+    Model.objects.filter(is_current=True).update(is_current=False)
+    obj.is_current = True
+    obj.updated_by = user
+    obj.save(update_fields=["is_current", "updated_at", "updated_by"])
+    return obj
+```
+
+2) **Row locking when needed** (`select_for_update`)  
+Use when two requests can race (e.g. two admins setting current at the same time):
+
+```python
+@staticmethod
+@transaction.atomic
+def set_current(*, obj_id: int, user=None) -> Model:
+    obj = Model.objects.select_for_update().get(id=obj_id)
+    Model.objects.select_for_update().filter(is_current=True).update(is_current=False)
+    obj.is_current = True
+    obj.updated_by = user
+    obj.save(update_fields=["is_current", "updated_at", "updated_by"])
+    return obj
+```
+
+3) **Prefer DB constraints for invariants**  
+If an invariant must *never* be violated, enforce it at the database level too (unique constraints / partial unique constraints when supported).
+
+### 16.4 Exception Taxonomy and API Mapping
+
+The shared exception hierarchy lives in `domain/shared/exceptions.py` and is mapped to DRF responses in `domain/shared/api/exception_handlers.py`.
+
+Recommended usage in services/selectors:
+- `ValidationException` for business validation with optional `field_errors`
+- `NotFoundException` for missing resources
+- `ConflictException` for uniqueness/conflicts
+- `PermissionDeniedException` for authorization failures inside services (API permissions are still recommended)
+- `BusinessRuleException` for workflow/invariant violations
+
+This keeps API error responses consistent across domains.
+
+### 16.5 Testing Checklist (Aligned to the Architecture)
+
+Minimum tests per new model:
+
+- **Model tests**
+  - `clean()` validation for cross-field rules
+  - soft-delete behavior (if applicable)
+- **Service tests** (business logic)
+  - create/update/delete/restore
+  - key workflows (status transitions)
+  - conflict/rule enforcement (expect `ValidationException` / `BusinessRuleException`)
+- **Selector tests** (query correctness)
+  - filters/search
+  - annotations/prefetch correctness (if used)
+- **API tests** (only for exposed endpoints)
+  - permissions
+  - serializer validation + response shape
+
+---
+
 ## Summary
 
 This guide provides a complete, consistent pattern for implementing domain models in this Django DDD project. By following these patterns exactly, you ensure:

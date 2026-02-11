@@ -161,6 +161,9 @@ Models (Structure)
 
 ### Golden Rules
 - ✅ **Always** inherit from `AuditModel`
+- ✅ **Prefer DB constraints** for invariants that must never be violated
+- ✅ **Use shared domain exceptions** (`domain/shared/exceptions.py`) for consistent API errors
+- ✅ **Use `transaction.atomic`** for multi-step writes / workflow transitions
 - ✅ **Always** use soft delete
 - ✅ **Always** track users (created_by, updated_by, deleted_by)
 - ✅ **Always** use keyword-only args in services/selectors

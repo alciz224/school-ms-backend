@@ -25,4 +25,13 @@ DJANGO_SETTINGS_MODULE = "config.settings"
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --tb=short"
+addopts = "-q --tb=short"
+# ref/ contains historical/reference code and is not part of the active project.
+# Exclude it from test discovery to avoid importing non-installed apps.
+norecursedirs = [
+    "ref",     # helper/reference code
+    "tables",   # helper specs and exports
+    "auth/tables",  # API contract helper yaml tables
+    "tmp_rovodev_*",  # local temporary files
+]
+

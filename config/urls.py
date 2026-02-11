@@ -35,6 +35,13 @@ urlpatterns = [
     # API v1 - School Operations
     # URLs: /api/v1/school-operations/*
     path("api/v1/school-operations/", include("domain.school_operations.api.urls", namespace="school_operations")),
+    # API v1 - Enrollment
+    # URLs: /api/v1/enrollment/*
+    path("api/v1/enrollment/", include("domain.enrollment.api.urls", namespace="enrollment")),
+    # API v1 - Assessment
+    # URLs: /api/v1/assessment/*
+    path("api/v1/assessment/", include("domain.assessment.api.urls", namespace="assessment")),
+
     # API Documentation
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(

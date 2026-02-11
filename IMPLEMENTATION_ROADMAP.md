@@ -449,6 +449,56 @@ GET        /api/enrollment/schedules/classroom/{classroom_id}/
 
 ---
 
+## 6. ✅ Enrollment Domain [COMPLETE - Portal Ready]
+
+**Status**: ✅ Complete (v1 - Portal Ready)  
+**Priority**: P3 - High  
+**Location**: `domain/enrollment/`  
+**Dependencies**: School Operations, Account
+
+### Purpose
+Student enrollment and classroom assignment with portal-based access control.
+
+### Implemented in v1
+- ✅ **Models:**
+  - `Classroom` (FK → SchoolYearLevel, unique per level+name)
+  - `StudentEnrollment` (student optional, homonyme suffix auto-calculated)
+- ✅ **Identifiers:**
+  - `annual_identifier` (unique, required)
+  - `classroom_identifier` (optional)
+  - `classroom_suffix` (auto-assigned for same first+last name in classroom)
+- ✅ **Business Logic:**
+  - Create/update/transfer services
+  - Homonyme disambiguation (suffix rule A: collision-only, stable)
+  - Transfer workflow with `previous_classroom` tracking
+- ✅ **Portal-Based Permissions:**
+  - Session-based `current_role` permissions (SCHOOL_ADMIN, STAFF, TEACHER, STUDENT, PARENT)
+  - Custom permission classes: `HasPortalRole`, `IsSchoolStaffOrAdmin`, etc.
+- ✅ **Roster Endpoints (portal-oriented):**
+  - `GET /roster/classrooms/{id}/students/` — classroom roster
+  - `GET /roster/classrooms/{id}/stats/` — capacity stats
+  - `GET /roster/school-year-levels/{id}/enrollments/` — level enrollments
+  - `GET /roster/me/` — student's own enrollments
+  - `GET /roster/my-classes/` — teacher's classes (placeholder)
+  - `GET /roster/my-children/` — parent's children (placeholder)
+- ✅ **API:**
+  - Full CRUD for classrooms and enrollments (SCHOOL_ADMIN/STAFF only)
+  - Transfer endpoint: `/student-enrollments/{id}/transfer/`
+- ✅ **Tests:**
+  - Model validation, services, suffix logic, permissions, roster selectors
+- ✅ **Documentation:**
+  - `domain/enrollment/README.md` (API contract, workflows, permissions)
+
+### Deferred (v2)
+- ⏳ TeacherAssignment model (link teachers to classrooms/subjects)
+- ⏳ Parent-child relationship model
+- ⏳ Auto-generation of `annual_identifier`
+- ⏳ Capacity enforcement on enrollment
+- ⏳ Bulk enrollment operations
+- ⏳ Full enrollment history/audit table
+
+---
+
 ## 7. 🔄 Assessment Domain [NOT STARTED]
 
 **Status**: 🔄 Not Started  
