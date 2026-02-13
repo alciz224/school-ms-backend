@@ -74,12 +74,13 @@ class LocalityService:
         Raises:
             ValidationError: If locality has associated schools (future check)
         """
-        # TODO: Add check for associated schools when School model is implemented
-        # if locality.schools.filter(is_deleted=False).exists():
-        #     raise ValidationError(
-        #         _('Cannot delete locality with associated schools. '
-        #           'Delete or reassign all schools first.')
-        #     )
+        # Check for associated schools
+        from domain.school_operations.models import School
+        if School.objects.filter(locality=locality, is_deleted=False).exists():
+            raise ValidationError(
+                _('Cannot delete locality with associated schools. '
+                  'Delete or reassign all schools first.')
+            )
 
         if hard:
             locality.hard_delete()

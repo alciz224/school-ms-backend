@@ -94,7 +94,13 @@ class LevelService:
         Raises:
             ValidationError: If level has dependencies
         """
-        # TODO: Check for school year levels, student enrollments when implemented
+        # Check for school year levels
+        from domain.school_operations.models import SchoolYearLevel
+        if SchoolYearLevel.objects.filter(level=level, is_deleted=False).exists():
+            raise ValidationError(
+                _('Cannot delete level with associated school year levels. '
+                  'Delete all school year levels first.')
+            )
         
         if hard:
             level.hard_delete()

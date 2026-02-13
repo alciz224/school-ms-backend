@@ -14,6 +14,25 @@ class SchoolSelector:
     """Selector for school queries."""
 
     @staticmethod
+    def list(*, locality_id: int | None = None, status: str | None = None) -> QuerySet[School]:
+        """
+        List schools with optional filters.
+
+        Args:
+            locality_id: Filter by locality ID
+            status: Filter by status
+
+        Returns:
+            QuerySet of schools
+        """
+        qs = School.objects.select_related("locality")
+        if locality_id:
+            qs = qs.filter(locality_id=locality_id)
+        if status:
+            qs = qs.filter(status=status)
+        return qs
+
+    @staticmethod
     def get_all(*, include_deleted: bool = False) -> QuerySet[School]:
         """
         Get all schools.

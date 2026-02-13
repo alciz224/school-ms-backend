@@ -173,8 +173,13 @@ class AcademicYearService:
                   "Set another year as current first.")
             )
 
-        # TODO: Add dependency checks when school year models exist
-        # Check for school years, enrollments, etc.
+        # Check for associated school years
+        from domain.school_operations.models import SchoolYear
+        if SchoolYear.objects.filter(academic_year=academic_year, is_deleted=False).exists():
+            raise ValidationError(
+                _('Cannot delete academic year with associated school years. '
+                  'Delete or archive all school years first.')
+            )
 
         if hard:
             academic_year.hard_delete()

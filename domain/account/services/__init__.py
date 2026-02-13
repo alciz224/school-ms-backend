@@ -10,6 +10,7 @@ from .security import (
     SecurityQuestionsConfig,
     SecurityQuestionsSetupResult,
 )
+from .parent_child import ParentChildService
 
 __all__ = [
     # Auth
@@ -28,4 +29,6 @@ __all__ = [
     "SecurityService",
     "SecurityQuestionsConfig",
     "SecurityQuestionsSetupResult",
+    # Parent-Child
+    "ParentChildService",
 ]

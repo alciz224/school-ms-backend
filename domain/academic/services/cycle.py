@@ -106,7 +106,13 @@ class CycleService:
                   "Delete all levels first.")
             )
 
-        # TODO: Check for school year cycles when implemented
+        # Check for school year cycles
+        from domain.school_operations.models import SchoolYearCycle
+        if SchoolYearCycle.objects.filter(cycle=cycle, is_deleted=False).exists():
+            raise ValidationError(
+                _('Cannot delete cycle with associated school year cycles. '
+                  'Delete all school year cycles first.')
+            )
 
         if hard:
             cycle.hard_delete()

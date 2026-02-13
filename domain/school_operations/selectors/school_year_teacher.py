@@ -5,10 +5,12 @@ from domain.school_operations.models import SchoolYearTeacher
 
 class SchoolYearTeacherSelector:
     @staticmethod
-    def list(*, school_year_id: int | None = None, status: str | None = None) -> QuerySet[SchoolYearTeacher]:
+    def list(*, school_year_id: int | None = None, teacher_id: int | None = None, status: str | None = None) -> QuerySet[SchoolYearTeacher]:
         qs = SchoolYearTeacher.objects.select_related("school_year", "teacher")
         if school_year_id:
             qs = qs.filter(school_year_id=school_year_id)
+        if teacher_id:
+            qs = qs.filter(teacher_id=teacher_id)
         if status:
             qs = qs.filter(status=status)
         return qs

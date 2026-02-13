@@ -29,16 +29,28 @@ class ClassroomRosterViewSet(ReadOnlyModelViewSet):
     
     Permissions:
     - SCHOOL_ADMIN / STAFF: full access
-    - TEACHER: access to own classrooms (TODO: filter by teacher assignment)
+    - TEACHER: access to own classrooms (filtered by teacher assignment)
     """
 
     permission_classes = [IsSchoolStaffOrAdmin | IsTeacher]
     serializer_class = ClassroomRosterSerializer
 
     def get_queryset(self):
-        # For now, return all. Later: filter by teacher assignment if TEACHER role.
         from domain.enrollment.models import Classroom
-        return Classroom.objects.all()
+        from domain.enrollment.selectors import TeacherAssignmentSelector
+        
+        user = self.request.user
+        queryset = Classroom.objects.all()
+        
+        # Filter by teacher assignment if user has TEACHER role
+        if hasattr(user, 'current_role') and user.current_role == 'TEACHER':
+            # Get classrooms where this teacher has assignments
+            teacher_classroom_ids = TeacherAssignmentSelector.get_teacher_classroom_ids(
+                teacher_user_id=user.id
+            )
+            queryset = queryset.filter(id__in=teacher_classroom_ids)
+        
+        return queryset
 
     @extend_schema(responses=StudentEnrollmentRosterSerializer(many=True))
     @action(detail=True, methods=["get"], url_path="students")
@@ -103,9 +115,6 @@ class MyChildrenEnrollmentsView(APIView):
     Parent portal: get enrollments for my children.
     
     Permissions: PARENT role
-    
-    TODO: Implement parent-child relationship model/selector.
-    For now, returns empty list as placeholder.
     """
 
     permission_classes = [IsParent]
@@ -113,10 +122,27 @@ class MyChildrenEnrollmentsView(APIView):
 
     @extend_schema(responses=StudentEnrollmentRosterSerializer(many=True))
     def get(self, request):
-        # TODO: implement parent-child link and fetch children's enrollments
-        # children_ids = ParentChildSelector.get_children_ids(parent_id=request.user.id)
-        # enrollments = StudentEnrollment.objects.filter(student_id__in=children_ids, is_deleted=False)
-        return Response([])
+        from domain.account.selectors import ParentChildSelector
+        from domain.enrollment.models import StudentEnrollment
+        
+        # Get all children IDs for this parent
+        children_ids = ParentChildSelector.get_children_ids(parent_id=request.user.id)
+        
+        # Get enrollments for all children
+        enrollments = StudentEnrollment.objects.filter(
+            student_id__in=children_ids,
+            is_deleted=False
+        ).select_related(
+            'classroom',
+            'classroom__school_year_level',
+            'classroom__school_year_level__level',
+            'classroom__school_year_level__school_year_cycle',
+            'classroom__school_year_level__school_year_cycle__cycle',
+            'student'
+        ).order_by('classroom__school_year_level__level__order', 'classroom__name')
+        
+        serializer = StudentEnrollmentRosterSerializer(enrollments, many=True)
+        return Response(serializer.data)
 
 
 class MyClassesView(APIView):

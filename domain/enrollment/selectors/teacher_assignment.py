@@ -73,6 +73,22 @@ class TeacherAssignmentSelector:
         ).order_by("classroom__name", "school_year_level_subject__subject__name")
 
     @staticmethod
+    def get_teacher_classroom_ids(*, teacher_user_id: int):
+        """
+        Get IDs of all classrooms where a teacher has active assignments.
+        
+        Used for filtering classroom access in teacher portal.
+        """
+        from typing import List
+        return list(
+            TeacherAssignment.objects.filter(
+                school_year_teacher__teacher_id=teacher_user_id,
+                assignment_status=TeacherAssignmentStatus.ACTIVE,
+                is_deleted=False,
+            ).values_list("classroom_id", flat=True).distinct()
+        )
+
+    @staticmethod
     def get_classroom_teachers(*, classroom_id: int) -> QuerySet[TeacherAssignment]:
         """
         Get all active teachers for a classroom (for admin portal).

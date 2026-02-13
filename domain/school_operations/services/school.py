@@ -432,8 +432,13 @@ class SchoolService:
         Raises:
             ValidationError: If school has dependencies
         """
-        # TODO: Add dependency checks when SchoolYear and enrollment models exist
-        # Check for school years, students, teachers, etc.
+        # Check for associated school years
+        from domain.school_operations.models import SchoolYear
+        if SchoolYear.objects.filter(school=school, is_deleted=False).exists():
+            raise ValidationError(
+                _('Cannot delete school with associated school years. '
+                  'Delete or archive all school years first.')
+            )
 
         if hard:
             school.hard_delete()
