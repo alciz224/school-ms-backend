@@ -4,14 +4,14 @@ Serializers for verification.
 
 from rest_framework import serializers
 
-from domain.account.constants import VerificationType
+from domain.account.constants import VerificationType, VerificationMethod
 
 
 class SendVerificationCodeSerializer(serializers.Serializer):
     """Serializer for requesting a verification code."""
 
     type = serializers.ChoiceField(
-        choices=[(VerificationType.EMAIL, "Email"), (VerificationType.PHONE, "Phone")],
+        choices=VerificationMethod.choices,
         help_text="Type of verification: 'email' or 'phone'",
     )
 
@@ -20,7 +20,7 @@ class ConfirmVerificationCodeSerializer(serializers.Serializer):
     """Serializer for confirming a verification code."""
 
     type = serializers.ChoiceField(
-        choices=[(VerificationType.EMAIL, "Email"), (VerificationType.PHONE, "Phone")],
+        choices=VerificationMethod.choices,
         help_text="Type of verification: 'email' or 'phone'",
     )
     code = serializers.CharField(

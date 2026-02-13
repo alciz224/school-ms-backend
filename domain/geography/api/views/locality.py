@@ -19,7 +19,7 @@ from domain.geography.api.serializers import (
 from domain.shared.api.responses import api_response
 
 
-class LocalityViewSet(viewsets.ViewSet):
+class LocalityViewSet(viewsets.GenericViewSet):
     """
     ViewSet for Locality CRUD operations.
 
@@ -33,6 +33,15 @@ class LocalityViewSet(viewsets.ViewSet):
 
     permission_classes = [IsAuthenticated]
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return LocalityListSerializer
+        elif self.action == 'create':
+            return LocalityCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return LocalityUpdateSerializer
+        return LocalityDetailSerializer
+
     def get_queryset(self):
         """Get base queryset with related data."""
         return Locality.objects.select_related(
@@ -41,7 +50,7 @@ class LocalityViewSet(viewsets.ViewSet):
             'administrative_unit__parent'
         )
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         """List all localities."""
         queryset = self.get_queryset().order_by('administrative_unit__name', 'name')
         
@@ -66,12 +75,12 @@ class LocalityViewSet(viewsets.ViewSet):
                 Q(name__icontains=search) | Q(code__icontains=search)
             )
         
-        serializer = LocalityListSerializer(queryset, many=True)
+        serializer = self.get_serializer(queryset, many=True)
         return api_response(data=serializer.data)
 
-    def create(self, request):
+    def create(self, request, *args, **kwargs):
         """Create a new locality."""
-        serializer = LocalityCreateSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
         unit = AdministrativeUnit.objects.get(
@@ -94,7 +103,7 @@ class LocalityViewSet(viewsets.ViewSet):
             status_code=status.HTTP_201_CREATED
         )
 
-    def retrieve(self, request, pk=None):
+    def retrieve(self, request, pk=None, *args, **kwargs):
         """Get a locality by ID."""
         locality = self.get_queryset().filter(id=pk).first()
         if not locality:
@@ -104,10 +113,10 @@ class LocalityViewSet(viewsets.ViewSet):
                 status_code=status.HTTP_404_NOT_FOUND
             )
         
-        serializer = LocalityDetailSerializer(locality)
+        serializer = self.get_serializer(locality)
         return api_response(data=serializer.data)
 
-    def update(self, request, pk=None):
+    def update(self, request, pk=None, *args, **kwargs):
         """Update a locality."""
         locality = Locality.objects.filter(id=pk).first()
         if not locality:
@@ -117,7 +126,7 @@ class LocalityViewSet(viewsets.ViewSet):
                 status_code=status.HTTP_404_NOT_FOUND
             )
         
-        serializer = LocalityUpdateSerializer(data=request.data, locality=locality)
+        serializer = self.get_serializer(data=request.data, locality=locality)
         serializer.is_valid(raise_exception=True)
         
         unit = None

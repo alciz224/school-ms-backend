@@ -25,13 +25,14 @@ class MeView(BaseAPIView):
     """
 
     permission_classes = [IsAuthenticated]
+    serializer_class = UserDetailSerializer
 
     @extend_schema(
         tags=["User Profile"],
         summary="Get current user profile",
     )
     def get(self, request):
-        serializer = UserDetailSerializer(request.user)
+        serializer = self.serializer_class(request.user)
         return self.success_response(data=serializer.data)
 
     @extend_schema(
@@ -75,6 +76,7 @@ class UpdateEmailView(BaseAPIView):
     """
 
     permission_classes = [IsAuthenticated]
+    serializer_class = UserEmailUpdateSerializer
 
     @extend_schema(
         tags=["User Profile"],
@@ -82,7 +84,7 @@ class UpdateEmailView(BaseAPIView):
         request=UserEmailUpdateSerializer,
     )
     def post(self, request):
-        serializer = UserEmailUpdateSerializer(
+        serializer = self.serializer_class(
             data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
@@ -108,6 +110,7 @@ class UpdatePhoneView(BaseAPIView):
     """
 
     permission_classes = [IsAuthenticated]
+    serializer_class = UserPhoneUpdateSerializer
 
     @extend_schema(
         tags=["User Profile"],
@@ -115,7 +118,7 @@ class UpdatePhoneView(BaseAPIView):
         request=UserPhoneUpdateSerializer,
     )
     def post(self, request):
-        serializer = UserPhoneUpdateSerializer(
+        serializer = self.serializer_class(
             data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)

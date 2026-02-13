@@ -19,7 +19,7 @@ from domain.geography.api.serializers import (
 from domain.shared.api.responses import api_response
 
 
-class RegionViewSet(viewsets.ViewSet):
+class RegionViewSet(viewsets.GenericViewSet):
     """
     ViewSet for RegionAdministrative CRUD operations.
 
@@ -33,6 +33,15 @@ class RegionViewSet(viewsets.ViewSet):
 
     permission_classes = [IsAuthenticated]
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return RegionListSerializer
+        elif self.action == 'create':
+            return RegionCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return RegionUpdateSerializer
+        return RegionDetailSerializer
+
     def get_queryset(self):
         """Get base queryset with annotations."""
         return RegionAdministrative.objects.select_related('country').annotate(
@@ -42,7 +51,7 @@ class RegionViewSet(viewsets.ViewSet):
             )
         )
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         """List all regions."""
         queryset = self.get_queryset().order_by('country__name', 'name')
         
@@ -57,12 +66,12 @@ class RegionViewSet(viewsets.ViewSet):
                 Q(name__icontains=search) | Q(code__icontains=search)
             )
         
-        serializer = RegionListSerializer(queryset, many=True)
+        serializer = self.get_serializer(queryset, many=True)
         return api_response(data=serializer.data)
 
-    def create(self, request):
+    def create(self, request, *args, **kwargs):
         """Create a new region."""
-        serializer = RegionCreateSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
         country = Country.objects.get(id=serializer.validated_data['country_id'])
@@ -84,7 +93,7 @@ class RegionViewSet(viewsets.ViewSet):
             status_code=status.HTTP_201_CREATED
         )
 
-    def retrieve(self, request, pk=None):
+    def retrieve(self, request, pk=None, *args, **kwargs):
         """Get a region by ID."""
         region = self.get_queryset().filter(id=pk).first()
         if not region:
@@ -94,10 +103,10 @@ class RegionViewSet(viewsets.ViewSet):
                 status_code=status.HTTP_404_NOT_FOUND
             )
         
-        serializer = RegionDetailSerializer(region)
+        serializer = self.get_serializer(region)
         return api_response(data=serializer.data)
 
-    def update(self, request, pk=None):
+    def update(self, request, pk=None, *args, **kwargs):
         """Update a region."""
         region = RegionAdministrative.objects.filter(id=pk).first()
         if not region:
@@ -107,7 +116,7 @@ class RegionViewSet(viewsets.ViewSet):
                 status_code=status.HTTP_404_NOT_FOUND
             )
         
-        serializer = RegionUpdateSerializer(data=request.data, region=region)
+        serializer = self.get_serializer(data=request.data, region=region)
         serializer.is_valid(raise_exception=True)
         
         region = RegionService.update(

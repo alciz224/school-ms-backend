@@ -100,14 +100,14 @@ class School(AuditModel):
     school_type = models.CharField(
         _('type d\'école'),
         max_length=20,
-        choices=SchoolType.CHOICES,
+        choices=SchoolType.choices,
         help_text=_('Type d\'établissement scolaire')
     )
     
     ownership = models.CharField(
         _('statut'),
         max_length=20,
-        choices=SchoolOwnership.CHOICES,
+        choices=SchoolOwnership.choices,
         default=SchoolOwnership.PUBLIC,
         help_text=_('Type de propriété de l\'école')
     )
@@ -115,7 +115,7 @@ class School(AuditModel):
     status = models.CharField(
         _('état'),
         max_length=20,
-        choices=SchoolStatus.CHOICES,
+        choices=SchoolStatus.choices,
         default=SchoolStatus.DRAFT,
         db_index=True,
         help_text=_('État opérationnel de l\'école')

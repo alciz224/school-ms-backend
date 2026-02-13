@@ -181,7 +181,7 @@ class SchoolYear(AuditModel):
     # Status and state
     status = models.CharField(
         max_length=20,
-        choices=SchoolYearStatus.CHOICES,
+        choices=SchoolYearStatus.choices,
         default=SchoolYearStatus.PLANNING,
         verbose_name=_('statut'),
         help_text=_('Statut de l\'année scolaire'),

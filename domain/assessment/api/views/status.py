@@ -1,7 +1,10 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from domain.assessment.api.serializers.status import StatusResponseSerializer
 
 from domain.assessment.models import Assessment, AssessmentSubject
 from domain.assessment.services import AssessmentService, AssessmentSubjectService
@@ -10,7 +13,12 @@ from domain.enrollment.api.permissions import IsSchoolStaffOrAdmin
 
 class AssessmentStatusView(APIView):
     permission_classes = [IsSchoolStaffOrAdmin]
+    serializer_class = None
 
+    @extend_schema(
+        request=None,
+        responses=StatusResponseSerializer,
+    )
     def post(self, request, assessment_id: int, action_name: str):
         obj = Assessment.objects.get(id=assessment_id)
         if action_name == "activate":
@@ -26,7 +34,12 @@ class AssessmentStatusView(APIView):
 
 class AssessmentSubjectStatusView(APIView):
     permission_classes = [IsSchoolStaffOrAdmin]
+    serializer_class = None
 
+    @extend_schema(
+        request=None,
+        responses=StatusResponseSerializer,
+    )
     def post(self, request, assessment_subject_id: int, action_name: str):
         obj = AssessmentSubject.objects.get(id=assessment_subject_id)
         if action_name == "publish":

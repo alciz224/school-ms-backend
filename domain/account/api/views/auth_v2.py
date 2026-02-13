@@ -27,6 +27,7 @@ class SessionRegisterView(BaseAPIView):
 
     permission_classes = [AllowAny]
     throttle_classes = [RegistrationRateThrottle]
+    serializer_class = SessionRegisterSerializer
 
     @extend_schema(
         tags=["Auth V2 - Session"],
@@ -34,7 +35,7 @@ class SessionRegisterView(BaseAPIView):
         request=SessionRegisterSerializer,
     )
     def post(self, request):
-        serializer = SessionRegisterSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         auth_service = AuthService()
@@ -73,6 +74,7 @@ class SessionLoginView(BaseAPIView):
 
     permission_classes = [AllowAny]
     throttle_classes = [AuthRateThrottle]
+    serializer_class = SessionLoginSerializer
 
     @extend_schema(
         tags=["Auth V2 - Session"],
@@ -80,7 +82,7 @@ class SessionLoginView(BaseAPIView):
         request=SessionLoginSerializer,
     )
     def post(self, request):
-        serializer = SessionLoginSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         auth_service = AuthService()
@@ -111,6 +113,7 @@ class SessionLogoutView(BaseAPIView):
     """Logout by destroying the session."""
 
     permission_classes = [IsAuthenticated]
+    serializer_class = SessionLogoutSerializer
 
     @extend_schema(
         tags=["Auth V2 - Session"],
@@ -128,6 +131,7 @@ class SessionStatusView(BaseAPIView):
     """Check session status and get current user."""
 
     permission_classes = [IsAuthenticated]
+    serializer_class = None
 
     @extend_schema(
         tags=["Auth V2 - Session"],
@@ -147,6 +151,7 @@ class CSRFTokenView(BaseAPIView):
     """Get CSRF token for session-based requests."""
 
     permission_classes = [AllowAny]
+    serializer_class = None
 
     @extend_schema(
         tags=["Auth V2 - Session"],

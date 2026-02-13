@@ -297,6 +297,17 @@ SPECTACULAR_SETTINGS = {
         {"name": "Password", "description": "Password management endpoints"},
         {"name": "Security", "description": "Security questions endpoints"},
     ],
+    "ENUM_NAME_OVERRIDES": {
+        "AssessmentStatusEnum": "domain.assessment.constants.AssessmentStatus",
+        "StudentAssessmentStatusEnum": "domain.assessment.constants.StudentAssessmentStatus",
+        "AdministrativeUnitTypeEnum": "domain.geography.constants.AdministrativeUnitType",
+        "VerificationTypeEnum": "domain.account.constants.VerificationType",
+        "VerificationMethodEnum": "domain.account.constants.VerificationMethod",
+        "VerificationPurposeEnum": "domain.account.constants.VerificationPurpose",
+        "SchoolStatusEnum": "domain.school_operations.constants.SchoolStatus",
+        "SchoolTypeEnum": "domain.school_operations.constants.SchoolType",
+        "SchoolYearStatusEnum": "domain.school_operations.constants.SchoolYearStatus",
+    },
 }
 
 

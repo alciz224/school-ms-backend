@@ -1,5 +1,6 @@
 """SchoolYearCycle API views."""
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -115,6 +116,9 @@ class SchoolYearCycleViewSet(viewsets.ModelViewSet):
         summary="Get cycles by school year",
         description="Retrieve all cycle configurations for a specific school year.",
         tags=["School Operations - School Year Cycles"],
+        parameters=[
+            OpenApiParameter("school_year_id", OpenApiTypes.INT, location=OpenApiParameter.PATH),
+        ],
     )
     @action(detail=False, methods=["get"], url_path="by-school-year/(?P<school_year_id>[^/.]+)")
     def by_school_year(self, request, school_year_id=None):
@@ -129,6 +133,9 @@ class SchoolYearCycleViewSet(viewsets.ModelViewSet):
         summary="Get cycles by school",
         description="Retrieve all cycle configurations for a specific school across all years.",
         tags=["School Operations - School Year Cycles"],
+        parameters=[
+            OpenApiParameter("school_id", OpenApiTypes.INT, location=OpenApiParameter.PATH),
+        ],
     )
     @action(detail=False, methods=["get"], url_path="by-school/(?P<school_id>[^/.]+)")
     def by_school(self, request, school_id=None):
@@ -153,6 +160,9 @@ class SchoolYearCycleViewSet(viewsets.ModelViewSet):
         summary="Get active cycles by school",
         description="Retrieve cycle configurations for a school's active school year.",
         tags=["School Operations - School Year Cycles"],
+        parameters=[
+            OpenApiParameter("school_id", OpenApiTypes.INT, location=OpenApiParameter.PATH),
+        ],
     )
     @action(detail=False, methods=["get"], url_path="active/by-school/(?P<school_id>[^/.]+)")
     def active_by_school(self, request, school_id=None):

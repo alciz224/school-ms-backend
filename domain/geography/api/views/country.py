@@ -19,7 +19,7 @@ from domain.geography.api.serializers import (
 from domain.shared.api.responses import api_response
 
 
-class CountryViewSet(viewsets.ViewSet):
+class CountryViewSet(viewsets.GenericViewSet):
     """
     ViewSet for Country CRUD operations.
 
@@ -33,13 +33,22 @@ class CountryViewSet(viewsets.ViewSet):
 
     permission_classes = [IsAuthenticated]
 
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return CountryListSerializer
+        elif self.action == 'create':
+            return CountryCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return CountryUpdateSerializer
+        return CountryDetailSerializer
+
     def get_queryset(self):
         """Get base queryset with annotations."""
         return Country.objects.annotate(
             regions_count=Count('regions', filter=Q(regions__is_deleted=False))
         )
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         """List all countries."""
         queryset = self.get_queryset().order_by('name')
         
@@ -50,12 +59,12 @@ class CountryViewSet(viewsets.ViewSet):
                 Q(name__icontains=search) | Q(code__icontains=search)
             )
         
-        serializer = CountryListSerializer(queryset, many=True)
+        serializer = self.get_serializer(queryset, many=True)
         return api_response(data=serializer.data)
 
-    def create(self, request):
+    def create(self, request, *args, **kwargs):
         """Create a new country."""
-        serializer = CountryCreateSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
         country = CountryService.create(
@@ -67,6 +76,7 @@ class CountryViewSet(viewsets.ViewSet):
         
         # Re-fetch with annotations
         country = self.get_queryset().get(id=country.id)
+        # Note: We use Detail serializer for response
         output_serializer = CountryDetailSerializer(country)
         return api_response(
             data=output_serializer.data,
@@ -74,7 +84,7 @@ class CountryViewSet(viewsets.ViewSet):
             status_code=status.HTTP_201_CREATED
         )
 
-    def retrieve(self, request, pk=None):
+    def retrieve(self, request, pk=None, *args, **kwargs):
         """Get a country by ID."""
         country = self.get_queryset().filter(id=pk).first()
         if not country:
@@ -84,10 +94,10 @@ class CountryViewSet(viewsets.ViewSet):
                 status_code=status.HTTP_404_NOT_FOUND
             )
         
-        serializer = CountryDetailSerializer(country)
+        serializer = self.get_serializer(country)
         return api_response(data=serializer.data)
 
-    def update(self, request, pk=None):
+    def update(self, request, pk=None, *args, **kwargs):
         """Update a country."""
         country = Country.objects.filter(id=pk).first()
         if not country:
@@ -97,7 +107,7 @@ class CountryViewSet(viewsets.ViewSet):
                 status_code=status.HTTP_404_NOT_FOUND
             )
         
-        serializer = CountryUpdateSerializer(data=request.data, country=country)
+        serializer = self.get_serializer(data=request.data, country=country)
         serializer.is_valid(raise_exception=True)
         
         country = CountryService.update(

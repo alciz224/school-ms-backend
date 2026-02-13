@@ -13,6 +13,13 @@ class VerificationType(models.TextChoices):
     SECURITY = "security", "Security Questions"
 
 
+class VerificationMethod(models.TextChoices):
+    """Verification method (subset of types)."""
+
+    EMAIL = "email", "Email"
+    PHONE = "phone", "Phone"
+
+
 class VerificationPurpose(models.TextChoices):
     """Verification purpose."""
 

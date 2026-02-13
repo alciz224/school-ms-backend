@@ -19,7 +19,7 @@ from domain.geography.api.serializers import (
 from domain.shared.api.responses import api_response
 
 
-class AdministrativeUnitViewSet(viewsets.ViewSet):
+class AdministrativeUnitViewSet(viewsets.GenericViewSet):
     """
     ViewSet for AdministrativeUnit CRUD operations.
 
@@ -33,6 +33,16 @@ class AdministrativeUnitViewSet(viewsets.ViewSet):
 
     permission_classes = [IsAuthenticated]
 
+    def get_serializer_class(self):
+        """Get serializer class based on action."""
+        if self.action == 'list':
+            return AdministrativeUnitListSerializer
+        elif self.action == 'create':
+            return AdministrativeUnitCreateSerializer
+        elif self.action in ['update', 'partial_update']:
+            return AdministrativeUnitUpdateSerializer
+        return AdministrativeUnitDetailSerializer
+
     def get_queryset(self):
         """Get base queryset with annotations."""
         return AdministrativeUnit.objects.select_related(
@@ -42,9 +52,9 @@ class AdministrativeUnitViewSet(viewsets.ViewSet):
             children_count=Count('children', filter=Q(children__is_deleted=False))
         )
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         """List all administrative units."""
-        queryset = self.get_queryset().order_by('region__name', 'type', 'name')
+        queryset = self.filter_queryset(self.get_queryset()).order_by('region__name', 'type', 'name')
         
         # Optional filters
         region_id = request.query_params.get('region_id')
@@ -70,12 +80,12 @@ class AdministrativeUnitViewSet(viewsets.ViewSet):
                 Q(name__icontains=search) | Q(code__icontains=search)
             )
         
-        serializer = AdministrativeUnitListSerializer(queryset, many=True)
+        serializer = self.get_serializer(queryset, many=True)
         return api_response(data=serializer.data)
 
-    def create(self, request):
+    def create(self, request, *args, **kwargs):
         """Create a new administrative unit."""
-        serializer = AdministrativeUnitCreateSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
         region = RegionAdministrative.objects.get(
@@ -105,7 +115,7 @@ class AdministrativeUnitViewSet(viewsets.ViewSet):
             status_code=status.HTTP_201_CREATED
         )
 
-    def retrieve(self, request, pk=None):
+    def retrieve(self, request, pk=None, *args, **kwargs):
         """Get an administrative unit by ID."""
         unit = self.get_queryset().filter(id=pk).first()
         if not unit:
@@ -115,10 +125,10 @@ class AdministrativeUnitViewSet(viewsets.ViewSet):
                 status_code=status.HTTP_404_NOT_FOUND
             )
         
-        serializer = AdministrativeUnitDetailSerializer(unit)
+        serializer = self.get_serializer(unit)
         return api_response(data=serializer.data)
 
-    def update(self, request, pk=None):
+    def update(self, request, pk=None, *args, **kwargs):
         """Update an administrative unit."""
         unit = AdministrativeUnit.objects.filter(id=pk).first()
         if not unit:
@@ -128,7 +138,7 @@ class AdministrativeUnitViewSet(viewsets.ViewSet):
                 status_code=status.HTTP_404_NOT_FOUND
             )
         
-        serializer = AdministrativeUnitUpdateSerializer(data=request.data, unit=unit)
+        serializer = self.get_serializer(data=request.data, unit=unit)
         serializer.is_valid(raise_exception=True)
         
         parent = None
@@ -153,11 +163,13 @@ class AdministrativeUnitViewSet(viewsets.ViewSet):
             message='Administrative unit updated successfully.'
         )
 
-    def partial_update(self, request, pk=None):
+    def partial_update(self, request, pk=None, *args, **kwargs):
         """Partially update an administrative unit."""
-        return self.update(request, pk)
+        # GenericViewSet delegates partial_update to update typically, or checks kwargs
+        # But here we implement it manually as alias
+        return self.update(request, pk, *args, **kwargs)
 
-    def destroy(self, request, pk=None):
+    def destroy(self, request, pk=None, *args, **kwargs):
         """Delete an administrative unit (soft delete)."""
         unit = AdministrativeUnit.objects.filter(id=pk).first()
         if not unit:

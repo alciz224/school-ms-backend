@@ -14,6 +14,13 @@ from domain.assessment.api.views.status import (
     AssessmentStatusView,
     AssessmentSubjectStatusView,
 )
+from domain.assessment.api.views.reporting import (
+    ReportCardClassroomListView,
+    ReportCardDetailView,
+    ReportCardGenerateView,
+    TranscriptDetailView,
+    TranscriptGenerateView,
+)
 
 app_name = "assessment"
 
@@ -60,5 +67,24 @@ urlpatterns = [
         "assessment-subjects/<int:assessment_subject_id>/status/<str:action_name>/",
         AssessmentSubjectStatusView.as_view(),
         name="assessment-subject-status",
+    ),
+    # Report cards
+    path("report-cards/generate/", ReportCardGenerateView.as_view(), name="report-card-generate"),
+    path(
+        "report-cards/student/<int:enrollment_id>/term/<int:term_id>/",
+        ReportCardDetailView.as_view(),
+        name="report-card-student-term",
+    ),
+    path(
+        "report-cards/classroom/<int:classroom_id>/term/<int:term_id>/",
+        ReportCardClassroomListView.as_view(),
+        name="report-card-classroom-term",
+    ),
+    # Transcripts
+    path("transcripts/generate/", TranscriptGenerateView.as_view(), name="transcript-generate"),
+    path(
+        "transcripts/student/<int:enrollment_id>/year/<int:school_year_id>/",
+        TranscriptDetailView.as_view(),
+        name="transcript-student-year",
     ),
 ]

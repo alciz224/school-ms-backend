@@ -28,6 +28,7 @@ class PredefinedQuestionsView(BaseAPIView):
     """
 
     permission_classes = [AllowAny]
+    serializer_class = None
 
     @extend_schema(
         tags=["Security Questions"],
@@ -55,6 +56,7 @@ class UserSecurityQuestionsView(BaseAPIView):
     """
 
     permission_classes = [IsAuthenticated]
+    serializer_class = None
 
     @extend_schema(
         tags=["Security Questions"],
@@ -80,6 +82,7 @@ class SecurityQuestionsSetupView(BaseAPIView):
     """
 
     permission_classes = [IsAuthenticated]
+    serializer_class = SecurityQuestionsSetupSerializer
 
     @extend_schema(
         tags=["Security Questions"],
@@ -87,7 +90,7 @@ class SecurityQuestionsSetupView(BaseAPIView):
         request=SecurityQuestionsSetupSerializer,
     )
     def post(self, request):
-        serializer = SecurityQuestionsSetupSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         security_service = SecurityService()
@@ -117,6 +120,7 @@ class SecurityQuestionDeleteView(BaseAPIView):
     """
 
     permission_classes = [IsAuthenticated]
+    serializer_class = None
 
     @extend_schema(
         tags=["Security Questions"],
@@ -146,6 +150,7 @@ class SecurityQuestionsVerifyView(BaseAPIView):
 
     permission_classes = [AllowAny]
     throttle_classes = [SecurityQuestionsRateThrottle]
+    serializer_class = SecurityQuestionsVerifySerializer
 
     @extend_schema(
         tags=["Security Questions"],
@@ -153,7 +158,7 @@ class SecurityQuestionsVerifyView(BaseAPIView):
         request=SecurityQuestionsVerifySerializer,
     )
     def post(self, request):
-        serializer = SecurityQuestionsVerifySerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         security_service = SecurityService()

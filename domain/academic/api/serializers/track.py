@@ -26,7 +26,7 @@ class TrackSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
-    def get_levels_count(self, obj):
+    def get_levels_count(self, obj) -> int:
         """Get the number of levels for this track."""
         return obj.levels.count()
 

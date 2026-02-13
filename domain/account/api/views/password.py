@@ -22,6 +22,7 @@ class PasswordResetRequestView(BaseAPIView):
 
     permission_classes = [AllowAny]
     throttle_classes = [PasswordResetRateThrottle]
+    serializer_class = PasswordResetRequestSerializer
 
     @extend_schema(
         tags=["Password"],
@@ -29,7 +30,7 @@ class PasswordResetRequestView(BaseAPIView):
         request=PasswordResetRequestSerializer,
     )
     def post(self, request):
-        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         password_service = PasswordService()
@@ -50,6 +51,7 @@ class PasswordResetConfirmView(BaseAPIView):
     """Confirm password reset with code."""
 
     permission_classes = [AllowAny]
+    serializer_class = PasswordResetConfirmSerializer
 
     @extend_schema(
         tags=["Password"],
@@ -57,7 +59,7 @@ class PasswordResetConfirmView(BaseAPIView):
         request=PasswordResetConfirmSerializer,
     )
     def post(self, request):
-        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         password_service = PasswordService()
@@ -77,6 +79,7 @@ class PasswordChangeView(BaseAPIView):
     """Change password for authenticated user."""
 
     permission_classes = [IsAuthenticated]
+    serializer_class = PasswordChangeSerializer
 
     @extend_schema(
         tags=["Password"],
@@ -84,7 +87,7 @@ class PasswordChangeView(BaseAPIView):
         request=PasswordChangeSerializer,
     )
     def post(self, request):
-        serializer = PasswordChangeSerializer(
+        serializer = self.serializer_class(
             data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
@@ -111,6 +114,7 @@ class PasswordStrengthView(BaseAPIView):
     """Check password strength."""
 
     permission_classes = [AllowAny]
+    serializer_class = PasswordStrengthSerializer
 
     @extend_schema(
         tags=["Password"],
@@ -118,7 +122,7 @@ class PasswordStrengthView(BaseAPIView):
         request=PasswordStrengthSerializer,
     )
     def post(self, request):
-        serializer = PasswordStrengthSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         return self.success_response(data=serializer.validated_data)

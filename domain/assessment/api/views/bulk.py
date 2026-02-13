@@ -12,9 +12,10 @@ from domain.enrollment.api.permissions import IsTeacher
 
 class AssessmentSubjectGradesPreviewView(APIView):
     permission_classes = [IsTeacher]
+    serializer_class = AssessmentGradesPreviewSerializer
 
     def post(self, request, assessment_subject_id: int):
-        serializer = AssessmentGradesPreviewSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         result = StudentAssessmentService.preview_bulk_import(
             assessment_subject_id=assessment_subject_id,
@@ -25,9 +26,10 @@ class AssessmentSubjectGradesPreviewView(APIView):
 
 class AssessmentSubjectGradesCommitView(APIView):
     permission_classes = [IsTeacher]
+    serializer_class = AssessmentGradesCommitSerializer
 
     def post(self, request, assessment_subject_id: int):
-        serializer = AssessmentGradesCommitSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         result = StudentAssessmentService.commit_bulk_import(
             assessment_subject_id=assessment_subject_id,

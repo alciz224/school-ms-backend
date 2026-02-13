@@ -372,6 +372,18 @@ domain/{domain}/
 
 ---
 
+## 📘 Domain API Usage Guides
+
+Quick API references for frontend integration (per domain):
+
+- `domain/assessment/API_USAGE.md`
+- `domain/enrollment/API_USAGE.md`
+- `domain/school_operations/API_USAGE.md`
+- `domain/academic/API_USAGE.md`
+- `domain/geography/API_USAGE.md`
+
+---
+
 ## 🔥 Advanced Patterns (Team Scale)
 
 If you’re implementing workflow-heavy or cross-domain features, see:

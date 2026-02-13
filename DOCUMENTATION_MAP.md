@@ -392,6 +392,18 @@ Need something?
 
 ---
 
+## 📘 Domain API Usage Guides
+
+Quick API references for frontend integration (per domain):
+
+- `domain/assessment/API_USAGE.md`
+- `domain/enrollment/API_USAGE.md`
+- `domain/school_operations/API_USAGE.md`
+- `domain/academic/API_USAGE.md`
+- `domain/geography/API_USAGE.md`
+
+---
+
 ## 📞 Still Lost?
 
 1. **Start here:** README_DOMAIN_PATTERNS.md

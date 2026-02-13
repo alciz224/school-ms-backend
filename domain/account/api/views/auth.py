@@ -23,6 +23,7 @@ class RegisterView(BaseAPIView):
 
     permission_classes = [AllowAny]
     throttle_classes = [RegistrationRateThrottle]
+    serializer_class = RegisterSerializer
 
     @extend_schema(
         tags=["Auth"],
@@ -30,7 +31,7 @@ class RegisterView(BaseAPIView):
         request=RegisterSerializer,
     )
     def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         auth_service = AuthService()
@@ -66,6 +67,7 @@ class LoginView(BaseAPIView):
 
     permission_classes = [AllowAny]
     throttle_classes = [AuthRateThrottle]
+    serializer_class = LoginSerializer
 
     @extend_schema(
         tags=["Auth"],
@@ -73,7 +75,7 @@ class LoginView(BaseAPIView):
         request=LoginSerializer,
     )
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         auth_service = AuthService()
@@ -101,6 +103,7 @@ class LogoutView(BaseAPIView):
     """Logout by blacklisting refresh token."""
 
     permission_classes = [IsAuthenticated]
+    serializer_class = LogoutSerializer
 
     @extend_schema(
         tags=["Auth"],
@@ -108,7 +111,7 @@ class LogoutView(BaseAPIView):
         request=LogoutSerializer,
     )
     def post(self, request):
-        serializer = LogoutSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         auth_service = AuthService()
@@ -121,6 +124,7 @@ class TokenRefreshView(BaseAPIView):
     """Refresh access token."""
 
     permission_classes = [AllowAny]
+    serializer_class = TokenRefreshSerializer
 
     @extend_schema(
         tags=["Auth"],
@@ -128,7 +132,7 @@ class TokenRefreshView(BaseAPIView):
         request=TokenRefreshSerializer,
     )
     def post(self, request):
-        serializer = TokenRefreshSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         auth_service = AuthService()

@@ -1,5 +1,6 @@
 """SchoolYearLevel API views."""
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -126,6 +127,9 @@ class SchoolYearLevelViewSet(viewsets.ModelViewSet):
         summary="Get levels by school year cycle",
         description="Retrieve all level configurations for a specific school year cycle.",
         tags=["School Operations - School Year Levels"],
+        parameters=[
+            OpenApiParameter("school_year_cycle_id", OpenApiTypes.INT, location=OpenApiParameter.PATH),
+        ],
     )
     @action(
         detail=False,
@@ -144,6 +148,9 @@ class SchoolYearLevelViewSet(viewsets.ModelViewSet):
         summary="Get levels by school year",
         description="Retrieve all level configurations for a specific school year.",
         tags=["School Operations - School Year Levels"],
+        parameters=[
+            OpenApiParameter("school_year_id", OpenApiTypes.INT, location=OpenApiParameter.PATH),
+        ],
     )
     @action(
         detail=False,
@@ -162,6 +169,9 @@ class SchoolYearLevelViewSet(viewsets.ModelViewSet):
         summary="Get levels by school",
         description="Retrieve all level configurations for a specific school across all years.",
         tags=["School Operations - School Year Levels"],
+        parameters=[
+            OpenApiParameter("school_id", OpenApiTypes.INT, location=OpenApiParameter.PATH),
+        ],
     )
     @action(detail=False, methods=["get"], url_path="by-school/(?P<school_id>[^/.]+)")
     def by_school(self, request, school_id=None):
@@ -186,6 +196,9 @@ class SchoolYearLevelViewSet(viewsets.ModelViewSet):
         summary="Get active levels by school",
         description="Retrieve level configurations for a school's active school year.",
         tags=["School Operations - School Year Levels"],
+        parameters=[
+            OpenApiParameter("school_id", OpenApiTypes.INT, location=OpenApiParameter.PATH),
+        ],
     )
     @action(
         detail=False,

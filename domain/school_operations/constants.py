@@ -5,79 +5,48 @@ This module defines constants for Guinea's educational system.
 """
 
 from django.utils.translation import gettext_lazy as _
+from django.db import models
 
 
 # School Types (based on Guinea's education system)
-class SchoolType:
+class SchoolType(models.TextChoices):
     """School type constants for Guinea."""
-    PRESCOLAIRE = 'prescolaire'          # Pre-school (ages 3-6)
-    PRIMAIRE = 'primaire'                # Primary (ages 6-12, CP-CM2)
-    COLLEGE = 'college'                  # Lower secondary (ages 12-16, 7e-10e)
-    LYCEE = 'lycee'                      # Upper secondary (ages 16-19, 2nde-Terminale)
-    TECHNIQUE = 'technique'              # Technical/vocational
-    SUPERIEUR = 'superieur'              # Higher education
-    FORMATION_PROF = 'formation_prof'    # Professional training
-
-    CHOICES = [
-        (PRESCOLAIRE, _('Préscolaire')),
-        (PRIMAIRE, _('Primaire')),
-        (COLLEGE, _('Collège')),
-        (LYCEE, _('Lycée')),
-        (TECHNIQUE, _('Technique/Professionnel')),
-        (SUPERIEUR, _('Supérieur')),
-        (FORMATION_PROF, _('Formation Professionnelle')),
-    ]
+    PRESCOLAIRE = 'prescolaire', _('Préscolaire')          # Pre-school (ages 3-6)
+    PRIMAIRE = 'primaire', _('Primaire')                # Primary (ages 6-12, CP-CM2)
+    COLLEGE = 'college', _('Collège')                  # Lower secondary (ages 12-16, 7e-10e)
+    LYCEE = 'lycee', _('Lycée')                      # Upper secondary (ages 16-19, 2nde-Terminale)
+    TECHNIQUE = 'technique', _('Technique/Professionnel')              # Technical/vocational
+    SUPERIEUR = 'superieur', _('Supérieur')              # Higher education
+    FORMATION_PROF = 'formation_prof', _('Formation Professionnelle')    # Professional training
 
 
 # School Status
-class SchoolStatus:
+class SchoolStatus(models.TextChoices):
     """School operational status."""
-    DRAFT = 'draft'           # School being planned
-    ACTIVE = 'active'         # Operational school
-    SUSPENDED = 'suspended'   # Temporarily closed
-    CLOSED = 'closed'         # Permanently closed
-
-    CHOICES = [
-        (DRAFT, _('Brouillon')),
-        (ACTIVE, _('Actif')),
-        (SUSPENDED, _('Suspendu')),
-        (CLOSED, _('Fermé')),
-    ]
+    DRAFT = 'draft', _('Brouillon')           # School being planned
+    ACTIVE = 'active', _('Actif')         # Operational school
+    SUSPENDED = 'suspended', _('Suspendu')   # Temporarily closed
+    CLOSED = 'closed', _('Fermé')         # Permanently closed
 
 
 # School Ownership Types (Guinea context)
-class SchoolOwnership:
+class SchoolOwnership(models.TextChoices):
     """School ownership types."""
-    PUBLIC = 'public'         # Government schools
-    PRIVATE = 'private'       # Private schools
-    COMMUNITY = 'community'   # Community-based schools
-    RELIGIOUS = 'religious'   # Religious schools
-    NGO = 'ngo'              # NGO-operated schools
-
-    CHOICES = [
-        (PUBLIC, _('Public')),
-        (PRIVATE, _('Privé')),
-        (COMMUNITY, _('Communautaire')),
-        (RELIGIOUS, _('Religieux')),
-        (NGO, _('ONG')),
-    ]
+    PUBLIC = 'public', _('Public')         # Government schools
+    PRIVATE = 'private', _('Privé')       # Private schools
+    COMMUNITY = 'community', _('Communautaire')   # Community-based schools
+    RELIGIOUS = 'religious', _('Religieux')   # Religious schools
+    NGO = 'ngo', _('ONG')              # NGO-operated schools
 
 
 # Guinea-specific settings
 # SchoolYear Status
-class SchoolYearStatus:
+class SchoolYearStatus(models.TextChoices):
     """SchoolYear operational status for Guinea's education system."""
-    PLANNING = 'planning'     # Planning phase, not yet active
-    ACTIVE = 'active'         # Currently operational
-    COMPLETED = 'completed'   # Year finished, final reports done
-    ARCHIVED = 'archived'     # Historical record, read-only
-
-    CHOICES = [
-        (PLANNING, _('Planification')),
-        (ACTIVE, _('Actif')),
-        (COMPLETED, _('Terminé')),
-        (ARCHIVED, _('Archivé')),
-    ]
+    PLANNING = 'planning', _('Planification')     # Planning phase, not yet active
+    ACTIVE = 'active', _('Actif')         # Currently operational
+    COMPLETED = 'completed', _('Terminé')   # Year finished, final reports done
+    ARCHIVED = 'archived', _('Archivé')     # Historical record, read-only
 
 
 # Guinea Academic Calendar Settings

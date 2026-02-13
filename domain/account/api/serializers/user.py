@@ -83,7 +83,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
             "last_login",
         ]
 
-    def get_security_summary(self, obj):
+    def get_security_summary(self, obj) -> dict:
         return obj.get_security_summary()
 
 

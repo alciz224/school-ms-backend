@@ -25,6 +25,7 @@ class SendVerificationCodeView(BaseAPIView):
 
     permission_classes = [IsAuthenticated]
     throttle_classes = [VerificationRateThrottle]
+    serializer_class = SendVerificationCodeSerializer
 
     @extend_schema(
         tags=["Verification"],
@@ -32,7 +33,7 @@ class SendVerificationCodeView(BaseAPIView):
         request=SendVerificationCodeSerializer,
     )
     def post(self, request):
-        serializer = SendVerificationCodeSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         verification_service = VerificationService()
@@ -66,6 +67,7 @@ class ConfirmVerificationCodeView(BaseAPIView):
     """
 
     permission_classes = [IsAuthenticated]
+    serializer_class = ConfirmVerificationCodeSerializer
 
     @extend_schema(
         tags=["Verification"],
@@ -73,7 +75,7 @@ class ConfirmVerificationCodeView(BaseAPIView):
         request=ConfirmVerificationCodeSerializer,
     )
     def post(self, request):
-        serializer = ConfirmVerificationCodeSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         verification_service = VerificationService()
@@ -101,6 +103,7 @@ class VerificationStatusView(BaseAPIView):
     """Get verification status."""
 
     permission_classes = [IsAuthenticated]
+    serializer_class = None
 
     @extend_schema(
         tags=["Verification"],

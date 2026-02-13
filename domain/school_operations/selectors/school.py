@@ -407,7 +407,7 @@ class SchoolSelector:
         
         stats = {
             school_type[0]: schools.filter(school_type=school_type[0]).count()
-            for school_type in SchoolType.CHOICES
+            for school_type in SchoolType.choices
         }
         
         return stats

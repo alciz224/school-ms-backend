@@ -5,6 +5,20 @@ This PR implements the core of the Assessment domain in a portal-friendly, perfo
 
 ## What’s included
 
+### Reporting (ReportCard & Transcript)
+- **ReportCard** (persisted, frozen): weighted averages, rank per classroom+term, snapshot in `raw_data`
+- **ReportCardSubject** lines: per subject averages with coefficients
+- **Transcript**: annual aggregation from report cards
+- **Services**:
+  - `ReportCardService.generate_for_classroom_term` (bulk, anti-N+1)
+  - `TranscriptService.generate_for_student`
+- **Reporting endpoints**:
+  - `POST /api/v1/assessment/report-cards/generate/`
+  - `GET /api/v1/assessment/report-cards/student/{enrollment_id}/term/{term_id}/`
+  - `GET /api/v1/assessment/report-cards/classroom/{classroom_id}/term/{term_id}/`
+  - `POST /api/v1/assessment/transcripts/generate/`
+  - `GET /api/v1/assessment/transcripts/student/{enrollment_id}/year/{school_year_id}/`
+
 ### Models and business rules
 - **Assessment**: unique per `(school_year_cycle, assessment_type, term)`, dates within term, status transitions (DRAFT → ACTIVE → CLOSED → ARCHIVED)
 - **AssessmentSubject**: unique per `(assessment, classroom, school_year_level_subject)`; validates `teacher_assignment` is ACTIVE and coherent; `max_score` at subject level; status transitions (DRAFT → PUBLISHED → CLOSED → ARCHIVED)
@@ -75,7 +89,6 @@ This PR implements the core of the Assessment domain in a portal-friendly, perfo
   - `pytest -q domain/assessment/tests/test_api_negative.py`
 
 ## Future work (next PRs)
-- ReportCard/Transcript design (aggregations on VALIDATED grades with `SchoolYearLevelSubject` coefficients)
 - Rate limiting and payload-size checks on bulk endpoints (optional)
 - Optional: return per-row structured error list for commit if we want non-atomic behavior (currently all-or-nothing by design)
 - API doc snippets and a small importer guide for frontends

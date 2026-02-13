@@ -24,10 +24,10 @@ class CycleSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
-    def get_tracks_count(self, obj):
+    def get_tracks_count(self, obj) -> int:
         """Get the number of tracks for this cycle."""
         return obj.tracks.count()
 
-    def get_levels_count(self, obj):
+    def get_levels_count(self, obj) -> int:
         """Get the number of levels for this cycle."""
         return obj.levels.count()

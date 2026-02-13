@@ -22,7 +22,7 @@ class TermTypeSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
-    def get_terms_count(self, obj):
+    def get_terms_count(self, obj) -> int:
         """Get the number of terms for this term type."""
         return obj.terms.count()
 

@@ -21,6 +21,8 @@ from domain.enrollment.selectors import RosterSelector
 from domain.shared.exceptions import NotFoundException
 
 
+from drf_spectacular.utils import extend_schema
+
 class ClassroomRosterViewSet(ReadOnlyModelViewSet):
     """
     Roster views for classrooms.
@@ -36,9 +38,9 @@ class ClassroomRosterViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         # For now, return all. Later: filter by teacher assignment if TEACHER role.
         from domain.enrollment.models import Classroom
-
         return Classroom.objects.all()
 
+    @extend_schema(responses=StudentEnrollmentRosterSerializer(many=True))
     @action(detail=True, methods=["get"], url_path="students")
     def students(self, request, pk=None):
         """Get the roster (list of students) for a specific classroom."""
@@ -65,7 +67,9 @@ class SchoolYearLevelEnrollmentsView(APIView):
     """
 
     permission_classes = [IsSchoolStaffOrAdmin]
+    serializer_class = None  # No input serializer
 
+    @extend_schema(responses=StudentEnrollmentRosterSerializer(many=True))
     def get(self, request, school_year_level_id):
         enrollments = RosterSelector.get_school_year_level_enrollments(
             school_year_level_id=school_year_level_id
@@ -82,7 +86,9 @@ class MyEnrollmentsView(APIView):
     """
 
     permission_classes = [IsStudent]
+    serializer_class = None
 
+    @extend_schema(responses=StudentEnrollmentRosterSerializer(many=True))
     def get(self, request):
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
@@ -103,7 +109,9 @@ class MyChildrenEnrollmentsView(APIView):
     """
 
     permission_classes = [IsParent]
+    serializer_class = None
 
+    @extend_schema(responses=StudentEnrollmentRosterSerializer(many=True))
     def get(self, request):
         # TODO: implement parent-child link and fetch children's enrollments
         # children_ids = ParentChildSelector.get_children_ids(parent_id=request.user.id)
@@ -119,7 +127,9 @@ class MyClassesView(APIView):
     """
 
     permission_classes = [IsTeacher]
+    serializer_class = None
 
+    @extend_schema(responses=None) # Custom response structure
     def get(self, request):
         from domain.enrollment.selectors import TeacherAssignmentSelector
         

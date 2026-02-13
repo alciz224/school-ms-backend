@@ -56,15 +56,15 @@ class SchoolYearListSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
     
-    def get_is_enrollment_open(self, obj):
+    def get_is_enrollment_open(self, obj) -> bool:
         """Check if enrollment is open."""
         return obj.is_enrollment_open()
     
-    def get_available_capacity(self, obj):
+    def get_available_capacity(self, obj) -> int:
         """Get available capacity."""
         return obj.available_capacity()
     
-    def get_enrollment_percentage(self, obj):
+    def get_enrollment_percentage(self, obj) -> float | None:
         """Calculate enrollment percentage."""
         if obj.capacity and obj.capacity > 0:
             return round((obj.current_enrollment_count / obj.capacity) * 100, 2)
@@ -132,21 +132,21 @@ class SchoolYearDetailSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
     
-    def get_is_enrollment_open(self, obj):
+    def get_is_enrollment_open(self, obj) -> bool:
         """Check if enrollment is open."""
         return obj.is_enrollment_open()
     
-    def get_available_capacity(self, obj):
+    def get_available_capacity(self, obj) -> int:
         """Get available capacity."""
         return obj.available_capacity()
     
-    def get_enrollment_percentage(self, obj):
+    def get_enrollment_percentage(self, obj) -> float | None:
         """Calculate enrollment percentage."""
         if obj.capacity and obj.capacity > 0:
             return round((obj.current_enrollment_count / obj.capacity) * 100, 2)
         return None
     
-    def get_can_be_deleted(self, obj):
+    def get_can_be_deleted(self, obj) -> dict:
         """Check if can be deleted."""
         can_delete, reason = obj.can_be_deleted()
         return {
