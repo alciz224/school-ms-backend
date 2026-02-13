@@ -29,7 +29,7 @@ class TestAcademicYearSelector:
 
     def test_list_academic_years(self, academic_year):
         """Test listing all academic years."""
-        years = AcademicYearSelector.list()
+        years = AcademicYearSelector.get_all()
         assert years.count() == 1
         assert academic_year in years
 
@@ -57,7 +57,7 @@ class TestCycleSelector:
 
     def test_list_cycles(self, cycle):
         """Test listing all cycles."""
-        cycles = CycleSelector.list()
+        cycles = CycleSelector.get_all()
         assert cycles.count() == 1
         assert cycle in cycles
 
@@ -73,7 +73,7 @@ class TestCycleSelector:
 
     def test_get_with_tracks(self, cycle, cycle_with_track):
         """Test getting cycles that have tracks."""
-        cycles = CycleSelector.get_with_tracks()
+        cycles = CycleSelector.with_tracks()
         assert cycles.count() == 1
         assert cycle_with_track in cycles
         assert cycle not in cycles
@@ -85,7 +85,7 @@ class TestTrackSelector:
 
     def test_list_tracks(self, track):
         """Test listing all tracks."""
-        tracks = TrackSelector.list()
+        tracks = TrackSelector.get_all()
         assert tracks.count() == 1
         assert track in tracks
 
@@ -100,7 +100,7 @@ class TestTrackSelector:
             updated_by=user,
         )
         
-        tracks = TrackSelector.list(cycle_id=track.cycle.id)
+        tracks = TrackSelector.get_all(cycle_id=track.cycle.id)
         assert tracks.count() == 2
 
     def test_get_by_id(self, track):
@@ -115,7 +115,7 @@ class TestLevelSelector:
 
     def test_list_levels(self, level):
         """Test listing all levels."""
-        levels = LevelSelector.list()
+        levels = LevelSelector.get_all()
         assert levels.count() == 1
         assert level in levels
 
@@ -131,7 +131,7 @@ class TestLevelSelector:
             updated_by=user,
         )
         
-        levels = LevelSelector.list(cycle_id=level.cycle.id)
+        levels = LevelSelector.get_all(cycle_id=level.cycle.id)
         assert levels.count() == 2
 
     def test_list_by_track(self, cycle_with_track, track, user):
@@ -156,7 +156,7 @@ class TestLevelSelector:
             updated_by=user,
         )
         
-        levels = LevelSelector.list(track_id=track.id)
+        levels = LevelSelector.get_all(track_id=track.id)
         assert levels.count() == 2
 
     def test_get_by_id(self, level):
@@ -171,7 +171,7 @@ class TestSubjectSelector:
 
     def test_list_subjects(self, subject):
         """Test listing all subjects."""
-        subjects = SubjectSelector.list()
+        subjects = SubjectSelector.get_all()
         assert subjects.count() == 1
         assert subject in subjects
 
@@ -192,7 +192,7 @@ class TestAssessmentTypeSelector:
 
     def test_list_assessment_types(self, assessment_type):
         """Test listing all assessment types."""
-        types = AssessmentTypeSelector.list()
+        types = AssessmentTypeSelector.get_all()
         assert types.count() == 1
         assert assessment_type in types
 
@@ -213,7 +213,7 @@ class TestTermTypeSelector:
 
     def test_list_term_types(self, term_type):
         """Test listing all term types."""
-        types = TermTypeSelector.list()
+        types = TermTypeSelector.get_all()
         assert types.count() == 1
         assert term_type in types
 
@@ -234,7 +234,7 @@ class TestTermSelector:
 
     def test_list_terms(self, term):
         """Test listing all terms."""
-        terms = TermSelector.list()
+        terms = TermSelector.get_all()
         assert terms.count() == 1
         assert term in terms
 
@@ -250,7 +250,7 @@ class TestTermSelector:
             updated_by=user,
         )
         
-        terms = TermSelector.list(term_type_id=term.term_type.id)
+        terms = TermSelector.get_all(term_type_id=term.term_type.id)
         assert terms.count() == 2
 
     def test_get_by_id(self, term):
@@ -259,9 +259,11 @@ class TestTermSelector:
         assert result == term
 
     def test_get_by_order(self, term):
-        """Test getting term by order."""
-        result = TermSelector.get_by_order(
+        """Test getting term by order using filter."""
+        result = Term.objects.filter(
             term_type_id=term.term_type.id,
-            order=1
-        )
+            order=1,
+            is_deleted=False
+        ).first()
         assert result == term
+

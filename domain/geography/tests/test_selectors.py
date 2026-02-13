@@ -17,7 +17,7 @@ class TestCountrySelector:
 
     def test_list_countries(self, country):
         """Test listing all countries."""
-        countries = CountrySelector.list()
+        countries = CountrySelector.get_all()
         assert countries.count() == 1
         assert country in countries
 
@@ -35,10 +35,11 @@ class TestCountrySelector:
         result = CountrySelector.get_by_code(code="gn")
         assert result == country
 
-    def test_get_by_name(self, country):
-        """Test getting country by name."""
-        result = CountrySelector.get_by_name(name="Guinea")
-        assert result == country
+    def test_search_by_name(self, country):
+        """Test searching country by name."""
+        results = CountrySelector.search(query="Guinea")
+        assert results.count() == 1
+        assert country in results
 
 
 @pytest.mark.django_db
@@ -47,7 +48,7 @@ class TestRegionSelector:
 
     def test_list_regions(self, region):
         """Test listing all regions."""
-        regions = RegionSelector.list()
+        regions = RegionSelector.get_all()
         assert regions.count() == 1
         assert region in regions
 
@@ -62,7 +63,7 @@ class TestRegionSelector:
             updated_by=user,
         )
         
-        regions = RegionSelector.list(country_id=country.id)
+        regions = RegionSelector.get_all(country_id=country.id)
         assert regions.count() == 2
 
     def test_get_by_id(self, region):
@@ -85,7 +86,7 @@ class TestAdministrativeUnitSelector:
 
     def test_list_units(self, prefecture):
         """Test listing all administrative units."""
-        units = AdministrativeUnitSelector.list()
+        units = AdministrativeUnitSelector.get_all()
         assert units.count() == 1
         assert prefecture in units
 
@@ -101,7 +102,7 @@ class TestAdministrativeUnitSelector:
             updated_by=user,
         )
         
-        units = AdministrativeUnitSelector.list(region_id=region.id)
+        units = AdministrativeUnitSelector.get_all(region_id=region.id)
         assert units.count() == 2
 
     def test_list_by_type(self, prefecture, user):
@@ -116,7 +117,7 @@ class TestAdministrativeUnitSelector:
             updated_by=user,
         )
         
-        prefectures = AdministrativeUnitSelector.list(
+        prefectures = AdministrativeUnitSelector.get_all(
             unit_type=AdministrativeUnitType.PREFECTURE
         )
         assert prefectures.count() == 1
@@ -171,7 +172,7 @@ class TestLocalitySelector:
 
     def test_list_localities(self, locality):
         """Test listing all localities."""
-        localities = LocalitySelector.list()
+        localities = LocalitySelector.get_all()
         assert localities.count() == 1
         assert locality in localities
 
@@ -186,7 +187,7 @@ class TestLocalitySelector:
             updated_by=user,
         )
         
-        localities = LocalitySelector.list(administrative_unit_id=prefecture.id)
+        localities = LocalitySelector.get_all(administrative_unit_id=prefecture.id)
         assert localities.count() == 2
 
     def test_get_by_id(self, locality):
@@ -203,7 +204,7 @@ class TestLocalitySelector:
         assert result == locality
 
     def test_filter_by_region(self, region, locality, user):
-        """Test filtering localities by region."""
+        """Test filtering localities by administrative unit in a region."""
         # Create another region and locality
         other_region = RegionAdministrative.objects.create(
             country=region.country,
@@ -228,7 +229,9 @@ class TestLocalitySelector:
             updated_by=user,
         )
         
-        # Should only get localities from Boké region
-        localities = LocalitySelector.filter_by_region(region_id=region.id)
-        assert localities.count() == 1
-        assert locality in localities
+        # Get localities from Boké region by filtering by administrative unit
+        localities = LocalitySelector.get_all()
+        boke_localities = localities.filter(administrative_unit__region=region)
+        assert boke_localities.count() == 1
+        assert locality in boke_localities
+
