@@ -36,8 +36,8 @@ class TestCountryAPI:
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]['code'] == country.code
+        assert len(response.data["data"]) == 1
+        assert response.data["data"][0]['code'] == country.code
 
     def test_retrieve_country(self, authenticated_client, country):
         """Test retrieving a single country."""
@@ -66,8 +66,8 @@ class TestRegionAPI:
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]['code'] == region.code
+        assert len(response.data["data"]) == 1
+        assert response.data["data"][0]['code'] == region.code
 
     def test_filter_regions_by_country(self, authenticated_client, country, region, user):
         """Test filtering regions by country."""
@@ -90,8 +90,8 @@ class TestRegionAPI:
         response = authenticated_client.get(url, {'country': country.id})
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]['country'] == country.id
+        assert len(response.data["data"]) == 1
+        assert response.data["data"][0]['country'] == country.id
 
     def test_retrieve_region(self, authenticated_client, region):
         """Test retrieving a single region."""
@@ -113,8 +113,8 @@ class TestAdministrativeUnitAPI:
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]['code'] == prefecture.code
+        assert len(response.data["data"]) == 1
+        assert response.data["data"][0]['code'] == prefecture.code
 
     def test_filter_units_by_region(self, authenticated_client, region, prefecture, user):
         """Test filtering units by region."""
@@ -139,8 +139,8 @@ class TestAdministrativeUnitAPI:
         response = authenticated_client.get(url, {'region': region.id})
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]['region'] == region.id
+        assert len(response.data["data"]) == 1
+        assert response.data["data"][0]['region'] == region.id
 
     def test_filter_units_by_type(self, authenticated_client, prefecture, user):
         """Test filtering units by type."""
@@ -158,8 +158,8 @@ class TestAdministrativeUnitAPI:
         response = authenticated_client.get(url, {'type': AdministrativeUnitType.PREFECTURE})
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]['type'] == AdministrativeUnitType.PREFECTURE
+        assert len(response.data["data"]) == 1
+        assert response.data["data"][0]['type'] == AdministrativeUnitType.PREFECTURE
 
     def test_retrieve_administrative_unit(self, authenticated_client, prefecture):
         """Test retrieving a single administrative unit."""
@@ -181,8 +181,8 @@ class TestLocalityAPI:
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]['code'] == locality.code
+        assert len(response.data["data"]) == 1
+        assert response.data["data"][0]['code'] == locality.code
 
     def test_filter_localities_by_unit(self, authenticated_client, prefecture, locality, user):
         """Test filtering localities by administrative unit."""
@@ -207,8 +207,8 @@ class TestLocalityAPI:
         response = authenticated_client.get(url, {'administrative_unit': prefecture.id})
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]['administrative_unit'] == prefecture.id
+        assert len(response.data["data"]) == 1
+        assert response.data["data"][0]['administrative_unit'] == prefecture.id
 
     def test_retrieve_locality(self, authenticated_client, locality):
         """Test retrieving a single locality."""
@@ -227,3 +227,6 @@ class TestLocalityAPI:
         assert response.status_code == status.HTTP_200_OK
         # full_path should be in the response if serializer includes it
         # This depends on the serializer implementation
+
+
+

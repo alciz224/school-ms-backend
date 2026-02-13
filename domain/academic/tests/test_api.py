@@ -28,7 +28,7 @@ class TestAcademicYearAPI:
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
+        assert response.data["count"] == 1
 
     def test_retrieve_academic_year(self, authenticated_client, academic_year):
         """Test retrieving a single academic year."""
@@ -56,7 +56,7 @@ class TestCycleAPI:
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
+        assert response.data["count"] == 1
 
     def test_retrieve_cycle(self, authenticated_client, cycle):
         """Test retrieving a single cycle."""
@@ -77,7 +77,7 @@ class TestTrackAPI:
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
+        assert response.data["count"] == 1
 
     def test_filter_tracks_by_cycle(self, authenticated_client, track):
         """Test filtering tracks by cycle."""
@@ -85,8 +85,8 @@ class TestTrackAPI:
         response = authenticated_client.get(url, {'cycle': track.cycle.id})
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]['cycle'] == track.cycle.id
+        assert response.data["count"] == 1
+        assert response.data["results"][0]['cycle'] == track.cycle.id
 
 
 @pytest.mark.django_db
@@ -99,7 +99,7 @@ class TestLevelAPI:
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
+        assert response.data["count"] == 1
 
     def test_filter_levels_by_cycle(self, authenticated_client, level):
         """Test filtering levels by cycle."""
@@ -107,7 +107,7 @@ class TestLevelAPI:
         response = authenticated_client.get(url, {'cycle': level.cycle.id})
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
+        assert response.data["count"] == 1
 
     def test_filter_levels_by_track(self, authenticated_client, cycle_with_track, track, user):
         """Test filtering levels by track."""
@@ -126,7 +126,7 @@ class TestLevelAPI:
         response = authenticated_client.get(url, {'track': track.id})
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
+        assert response.data["count"] == 1
 
 
 @pytest.mark.django_db
@@ -139,7 +139,7 @@ class TestSubjectAPI:
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
+        assert response.data["count"] == 1
 
     def test_retrieve_subject(self, authenticated_client, subject):
         """Test retrieving a single subject."""
@@ -160,7 +160,7 @@ class TestAssessmentTypeAPI:
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
+        assert response.data["count"] == 1
 
     def test_retrieve_assessment_type(self, authenticated_client, assessment_type):
         """Test retrieving a single assessment type."""
@@ -181,7 +181,7 @@ class TestTermTypeAPI:
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
+        assert response.data["count"] == 1
 
     def test_retrieve_term_type(self, authenticated_client, term_type):
         """Test retrieving a single term type."""
@@ -202,7 +202,7 @@ class TestTermAPI:
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
+        assert response.data["count"] == 1
 
     def test_filter_terms_by_term_type(self, authenticated_client, term):
         """Test filtering terms by term type."""
@@ -210,8 +210,8 @@ class TestTermAPI:
         response = authenticated_client.get(url, {'term_type': term.term_type.id})
         
         assert response.status_code == status.HTTP_200_OK
-        assert len(response.data) == 1
-        assert response.data[0]['term_type'] == term.term_type.id
+        assert response.data["count"] == 1
+        assert response.data["results"][0]['term_type'] == term.term_type.id
 
     def test_retrieve_term(self, authenticated_client, term):
         """Test retrieving a single term."""
@@ -220,3 +220,4 @@ class TestTermAPI:
         
         assert response.status_code == status.HTTP_200_OK
         assert response.data['code'] == term.code
+
