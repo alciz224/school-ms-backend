@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "domain.school_operations",
     "domain.enrollment",
     "domain.assessment",
+    "domain.scheduling",
     # Portal apps
     "portal.school_admin",
     "portal.system_admin",

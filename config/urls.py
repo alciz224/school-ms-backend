@@ -41,6 +41,9 @@ urlpatterns = [
     # API v1 - Assessment
     # URLs: /api/v1/assessment/*
     path("api/v1/assessment/", include("domain.assessment.api.urls", namespace="assessment")),
+    # API v1 - Scheduling
+    # URLs: /api/v1/scheduling/*
+    path("api/v1/scheduling/", include("domain.scheduling.api.urls", namespace="scheduling")),
 
     # API Documentation
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
