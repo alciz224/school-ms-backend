@@ -32,7 +32,7 @@ class LevelService:
             ValidationError: If track requirements are not met
         """
         level = Level(
-            code=code.strip(),
+            code=code.upper().strip(),
             name=name.strip(),
             cycle=cycle,
             track=track,
@@ -66,7 +66,7 @@ class LevelService:
             ValidationError: If changes violate business rules
         """
         if code is not None:
-            level.code = code.strip()
+            level.code = code.upper().strip()
         if name is not None:
             level.name = name.strip()
         if cycle is not None:

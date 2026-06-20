@@ -2,7 +2,14 @@
 
 from datetime import date
 
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import (
+    extend_schema,
+    extend_schema_view,
+    inline_serializer,
+    OpenApiParameter,
+    OpenApiTypes,
+)
+from rest_framework import serializers as drf_serializers
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -149,10 +156,23 @@ class ScheduleConflictCheckView(APIView):
     """
     
     permission_classes = [IsSchoolStaffOrAdmin]
+    serializer_class = ConflictCheckSerializer
     
     @extend_schema(
         summary="Check for scheduling conflicts",
         request=ConflictCheckSerializer,
+        responses={200: inline_serializer(
+            name='ConflictCheckResponse',
+            fields={
+                'has_conflicts': drf_serializers.BooleanField(),
+                'classroom_conflicts': drf_serializers.ListField(
+                    child=drf_serializers.DictField()
+                ),
+                'teacher_conflicts': drf_serializers.ListField(
+                    child=drf_serializers.DictField()
+                ),
+            }
+        )},
     )
     def post(self, request):
         """Check for conflicts."""
@@ -169,7 +189,7 @@ class ScheduleConflictCheckView(APIView):
                     "id": s.id,
                     "classroom": s.classroom.name,
                     "subject": s.subject.name,
-                    "teacher": f"{s.teacher.first_name} {s.teacher.last_name}",
+                    "teacher": s.teacher.full_name,
                     "time": f"{s.time_slot.start_time}-{s.time_slot.end_time}",
                 }
                 for s in conflicts['classroom_conflicts']
@@ -179,7 +199,7 @@ class ScheduleConflictCheckView(APIView):
                     "id": s.id,
                     "classroom": s.classroom.name,
                     "subject": s.subject.name,
-                    "teacher": f"{s.teacher.first_name} {s.teacher.last_name}",
+                    "teacher": s.teacher.full_name,
                     "time": f"{s.time_slot.start_time}-{s.time_slot.end_time}",
                 }
                 for s in conflicts['teacher_conflicts']
@@ -198,12 +218,20 @@ class ClassroomTimetableView(APIView):
     """
     
     permission_classes = [IsSchoolStaffOrAdmin | IsTeacher]
+    serializer_class = TimetableSerializer
     
     @extend_schema(
         summary="Get classroom timetable",
         parameters=[
-            {"name": "effective_date", "type": "string", "format": "date", "required": False},
+            OpenApiParameter(
+                name='effective_date',
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filter schedules effective on this date',
+            ),
         ],
+        responses={200: TimetableSerializer(many=True)},
     )
     def get(self, request, classroom_id):
         """Get classroom timetable."""
@@ -232,7 +260,7 @@ class ClassroomTimetableView(APIView):
                     'order': schedule.time_slot.order,
                 },
                 'subject': schedule.subject.name,
-                'teacher': f"{schedule.teacher.first_name} {schedule.teacher.last_name}",
+                'teacher': schedule.teacher.full_name,
             })
         
         # Format response
@@ -257,12 +285,20 @@ class TeacherScheduleView(APIView):
     """
     
     permission_classes = [IsSchoolStaffOrAdmin | IsTeacher]
+    serializer_class = TimetableSerializer
     
     @extend_schema(
         summary="Get teacher schedule",
         parameters=[
-            {"name": "effective_date", "type": "string", "format": "date", "required": False},
+            OpenApiParameter(
+                name='effective_date',
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filter schedules effective on this date',
+            ),
         ],
+        responses={200: TimetableSerializer(many=True)},
     )
     def get(self, request, teacher_id):
         """Get teacher schedule."""
@@ -323,12 +359,20 @@ class StudentTimetableView(APIView):
     """
     
     permission_classes = [IsSchoolStaffOrAdmin | IsStudent | IsParent]
+    serializer_class = TimetableSerializer
     
     @extend_schema(
         summary="Get student timetable",
         parameters=[
-            {"name": "effective_date", "type": "string", "format": "date", "required": False},
+            OpenApiParameter(
+                name='effective_date',
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filter schedules effective on this date',
+            ),
         ],
+        responses={200: TimetableSerializer(many=True)},
     )
     def get(self, request, student_id):
         """Get student timetable."""
@@ -366,7 +410,7 @@ class StudentTimetableView(APIView):
                     'order': schedule.time_slot.order,
                 },
                 'subject': schedule.subject.name,
-                'teacher': f"{schedule.teacher.first_name} {schedule.teacher.last_name}",
+                'teacher': schedule.teacher.full_name,
             })
         
         # Format response
@@ -391,10 +435,22 @@ class BulkScheduleCreateView(APIView):
     """
     
     permission_classes = [IsSchoolStaffOrAdmin]
+    serializer_class = BulkScheduleCreateSerializer
     
     @extend_schema(
         summary="Bulk create schedules",
         request=BulkScheduleCreateSerializer,
+        responses={200: inline_serializer(
+            name='BulkScheduleCreateResponse',
+            fields={
+                'created_count': drf_serializers.IntegerField(),
+                'failed_count': drf_serializers.IntegerField(),
+                'created': ScheduleSerializer(many=True),
+                'failed': drf_serializers.ListField(
+                    child=drf_serializers.DictField()
+                ),
+            }
+        )},
     )
     def post(self, request):
         """Create multiple schedules."""
@@ -413,3 +469,4 @@ class BulkScheduleCreateView(APIView):
             "created": [ScheduleSerializer(s).data for s in result['created']],
             "failed": result['failed'],
         })
+

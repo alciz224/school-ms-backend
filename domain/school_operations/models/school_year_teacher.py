@@ -3,7 +3,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from domain.account.models import CustomUser
+from domain.account.models import TeacherProfile
 from domain.school_operations.constants import SchoolYearTeacherStatus
 from domain.school_operations.models.school_year import SchoolYear
 from domain.shared.models.base import AuditModel
@@ -30,10 +30,10 @@ class SchoolYearTeacher(AuditModel):
         help_text="School year for this teacher assignment",
     )
     teacher = models.ForeignKey(
-        CustomUser,
+        TeacherProfile,
         on_delete=models.PROTECT,
         related_name="school_year_assignments",
-        help_text="Teacher user (must have teacher role in session)",
+        help_text="Teacher profile (linked to a CustomUser with teacher role)",
     )
     status = models.CharField(
         max_length=20,

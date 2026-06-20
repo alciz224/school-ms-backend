@@ -1,66 +1,65 @@
 """Parent-Child relationship model."""
 
 from django.db import models
-from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from domain.account.models import CustomUser
+from domain.account.constants import ParentRelationshipType
+from domain.account.models.parent_profile import ParentProfile
+from domain.account.models.student_profile import StudentProfile
 from domain.shared.models.base import AuditModel
 
 
 class ParentChild(AuditModel):
     """
-    Represents a parent-child relationship between users.
-    
-    This model links parent users to their children (students) to enable
-    parent portal access to view their children's enrollments and performance.
-    
-    Business Rules:
-        - A child can have multiple parents (e.g., mother, father, guardian)
-        - A parent can have multiple children
-        - Unique per (parent, child) combination
-        - Parent and child must be different users
-        - Child should typically have STUDENT role (validated at service layer)
-        - Parent should typically have PARENT role (validated at service layer)
+    Relation parent-enfant entre un ParentProfile et un StudentProfile.
+
+    Permet au parent d'accéder via le portail parent aux inscriptions et résultats
+    de ses enfants.
+
+    Règles métier :
+        - Un enfant peut avoir plusieurs parents (père, mère, tuteur)
+        - Un parent peut avoir plusieurs enfants
+        - Unique par couple (parent, child)
+        - Un seul parent peut être is_primary=True par enfant
     """
 
     parent = models.ForeignKey(
-        CustomUser,
+        ParentProfile,
         on_delete=models.CASCADE,
         related_name="children_relationships",
-        help_text="Parent user account",
+        verbose_name=_("Parent"),
+        help_text=_("Profil parent."),
     )
     child = models.ForeignKey(
-        CustomUser,
+        StudentProfile,
         on_delete=models.CASCADE,
         related_name="parent_relationships",
-        help_text="Child (student) user account",
+        verbose_name=_("Enfant"),
+        help_text=_("Profil élève."),
     )
     relationship_type = models.CharField(
         max_length=20,
-        choices=[
-            ("FATHER", "Father"),
-            ("MOTHER", "Mother"),
-            ("GUARDIAN", "Legal Guardian"),
-            ("OTHER", "Other"),
-        ],
-        default="GUARDIAN",
-        help_text="Type of relationship",
+        choices=ParentRelationshipType.choices,
+        default=ParentRelationshipType.GUARDIAN,
+        verbose_name=_("Type de relation"),
+        help_text=_("Type de relation."),
     )
     is_primary = models.BooleanField(
         default=False,
-        help_text="Whether this is the primary contact for the child",
+        verbose_name=_("Contact principal"),
+        help_text=_("Contact principal pour cet enfant."),
     )
     notes = models.TextField(
         blank=True,
         null=True,
-        help_text="Additional notes about the relationship",
+        verbose_name=_("Notes"),
+        help_text=_("Notes complémentaires sur la relation."),
     )
 
     class Meta:
         db_table = "parent_child"
-        verbose_name = "Parent-Child Relationship"
-        verbose_name_plural = "Parent-Child Relationships"
+        verbose_name = _("Relation parent-enfant")
+        verbose_name_plural = _("Relations parent-enfant")
         ordering = ["child", "parent"]
         indexes = [
             models.Index(fields=["parent"], name="parent_child_parent_idx"),
@@ -72,22 +71,17 @@ class ParentChild(AuditModel):
                 condition=models.Q(is_deleted=False),
                 name="unique_parent_child_relationship",
             ),
+            # Un seul contact principal actif par enfant
+            models.UniqueConstraint(
+                fields=["child"],
+                condition=models.Q(is_deleted=False, is_primary=True),
+                name="unique_primary_parent_per_child",
+            ),
         ]
 
     def __str__(self) -> str:
-        return f"{self.parent.get_full_name()} -> {self.child.get_full_name()} ({self.relationship_type})"
-
-    def clean(self) -> None:
-        """Validate the relationship."""
-        super().clean()
-        
-        # Parent and child must be different users
-        if self.parent_id and self.child_id and self.parent_id == self.child_id:
-            raise ValidationError(
-                _("Parent and child must be different users.")
-            )
+        return f"{self.parent.full_name} → {self.child.full_name} ({self.get_relationship_type_display()})"
 
     def save(self, *args, **kwargs) -> None:
-        """Save with validation."""
         self.full_clean()
         super().save(*args, **kwargs)

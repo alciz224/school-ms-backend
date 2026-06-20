@@ -3,7 +3,7 @@
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from domain.account.models import ParentChild, CustomUser
+from domain.account.models import ParentChild, ParentProfile, StudentProfile
 
 
 class ParentChildService:
@@ -12,8 +12,8 @@ class ParentChildService:
     @staticmethod
     def create(
         *,
-        parent: CustomUser,
-        child: CustomUser,
+        parent: ParentProfile,
+        child: StudentProfile,
         relationship_type: str = "GUARDIAN",
         is_primary: bool = False,
         notes: str = None,
@@ -23,8 +23,8 @@ class ParentChildService:
         Create a parent-child relationship.
 
         Args:
-            parent: Parent user
-            child: Child user
+            parent: Parent profile
+            child: Student profile
             relationship_type: Type of relationship (FATHER, MOTHER, GUARDIAN, OTHER)
             is_primary: Whether this is the primary contact
             notes: Additional notes
@@ -32,14 +32,10 @@ class ParentChildService:
 
         Returns:
             Created ParentChild instance
-        
+
         Raises:
             ValidationError: If relationship is invalid
         """
-        # Additional business logic validation
-        if parent.id == child.id:
-            raise ValidationError(_("Parent and child must be different users."))
-
         relationship = ParentChild(
             parent=parent,
             child=child,

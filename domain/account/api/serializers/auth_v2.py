@@ -7,6 +7,8 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 from domain.account.validators import validate_phone_number, check_password_strength
+from domain.account.constants import UserRole
+from domain.account.selectors import UserRoleSelector
 
 User = get_user_model()
 
@@ -82,3 +84,28 @@ class SessionLoginSerializer(serializers.Serializer):
 class SessionLogoutSerializer(serializers.Serializer):
     """Serializer for session-based logout (no fields needed)."""
     pass
+
+
+class SelectRoleSerializer(serializers.Serializer):
+    """Serializer for role selection."""
+
+    role = serializers.ChoiceField(
+        choices=UserRole.choices,
+        help_text="Role to activate for this session"
+    )
+
+    def validate_role(self, value):
+        """Validate that the role is available for the user."""
+        request = self.context.get('request')
+        if not request or not request.user:
+            raise serializers.ValidationError("User not authenticated.")
+        
+        user = request.user
+        available_roles = UserRoleSelector.get_available_roles(user)
+
+        if value not in available_roles:
+            raise serializers.ValidationError(
+                "You do not have access to this role"
+            )
+
+        return value

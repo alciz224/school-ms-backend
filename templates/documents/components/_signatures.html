@@ -1,0 +1,16 @@
+<div class="signatures-section {% if signers|length == 1 %}single{% endif %} no-break">
+    {% for signer in signers %}
+    <div class="signature-block">
+        <div class="signature-title">{{ signer.title }}</div>
+        <div class="signature-name">{{ signer.name }}</div>
+        {% if signer.signature_image %}
+            <img src="{{ base_url }}{{ signer.signature_image.url }}" alt="Signature" class="signature-image">
+        {% else %}
+            <div class="signature-line"></div>
+        {% endif %}
+        <div class="signature-date">
+            {{ signer.location }}, le {{ generation_date|date:"d/m/Y" }}
+        </div>
+    </div>
+    {% endfor %}
+</div>

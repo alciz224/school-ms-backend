@@ -172,6 +172,7 @@ class BusinessRuleException(DomainException):
     def __init__(
         self, rule: Optional[str] = None, message: Optional[str] = None, **kwargs
     ):
+        self.rule = rule
         details = kwargs.pop("details", {})
         if rule:
             details["rule"] = rule

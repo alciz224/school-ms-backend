@@ -3,7 +3,7 @@
 from typing import Optional, List
 from django.db.models import QuerySet
 
-from domain.account.models import ParentChild, CustomUser
+from domain.account.models import ParentChild, ParentProfile, StudentProfile
 
 
 class ParentChildSelector:
@@ -56,17 +56,17 @@ class ParentChildSelector:
         return ParentChild.objects.select_related("parent", "child").get(id=relationship_id)
 
     @staticmethod
-    def get_children(*, parent_id: int) -> QuerySet[CustomUser]:
+    def get_children(*, parent_id: int) -> QuerySet[StudentProfile]:
         """
-        Get all children for a parent.
+        Get all children (StudentProfiles) for a parent.
 
         Args:
-            parent_id: Parent user ID
+            parent_id: ParentProfile ID
 
         Returns:
-            QuerySet of child users
+            QuerySet of StudentProfile
         """
-        return CustomUser.objects.filter(
+        return StudentProfile.objects.filter(
             parent_relationships__parent_id=parent_id,
             parent_relationships__is_deleted=False,
         ).distinct()
@@ -90,31 +90,31 @@ class ParentChildSelector:
         )
 
     @staticmethod
-    def get_parents(*, child_id: int) -> QuerySet[CustomUser]:
+    def get_parents(*, child_id: int) -> QuerySet[ParentProfile]:
         """
-        Get all parents for a child.
+        Get all parents (ParentProfiles) for a child.
 
         Args:
-            child_id: Child user ID
+            child_id: StudentProfile ID
 
         Returns:
-            QuerySet of parent users
+            QuerySet of ParentProfile
         """
-        return CustomUser.objects.filter(
+        return ParentProfile.objects.filter(
             children_relationships__child_id=child_id,
             children_relationships__is_deleted=False,
         ).distinct()
 
     @staticmethod
-    def get_primary_parent(*, child_id: int) -> Optional[CustomUser]:
+    def get_primary_parent(*, child_id: int) -> Optional[ParentProfile]:
         """
         Get the primary parent for a child.
 
         Args:
-            child_id: Child user ID
+            child_id: StudentProfile ID
 
         Returns:
-            Primary parent user or None
+            Primary ParentProfile or None
         """
         relationship = ParentChild.objects.filter(
             child_id=child_id,

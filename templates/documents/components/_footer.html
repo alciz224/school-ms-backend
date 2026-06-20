@@ -1,0 +1,12 @@
+<footer class="document-footer">
+    <div class="footer-left">
+        {{ school.name }}{% if school.address %} — {{ school.address }}{% endif %}
+    </div>
+    <div class="footer-center">
+        {% if school.phone %}{{ school.phone }}{% endif %}
+        {% if school.email %} | {{ school.email }}{% endif %}
+    </div>
+    <div class="footer-right">
+        Édité le {{ generation_date|date:"d/m/Y à H:i" }}
+    </div>
+</footer>

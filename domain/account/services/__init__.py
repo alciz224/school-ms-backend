@@ -11,6 +11,7 @@ from .security import (
     SecurityQuestionsSetupResult,
 )
 from .parent_child import ParentChildService
+from .admin_user import AdminUserService
 
 __all__ = [
     # Auth
@@ -31,4 +32,5 @@ __all__ = [
     "SecurityQuestionsSetupResult",
     # Parent-Child
     "ParentChildService",
+    "AdminUserService",
 ]

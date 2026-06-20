@@ -49,6 +49,11 @@ class SchoolYearCycleListSerializer(serializers.ModelSerializer):
     Includes only essential nested data.
     """
 
+    # Raw foreign-key ids required by the frontend to map existing data
+    school_year_id = serializers.IntegerField(read_only=True)
+    cycle_id = serializers.IntegerField(read_only=True)
+    term_type_id = serializers.IntegerField(read_only=True)
+
     school_year_display = serializers.CharField(
         source="school_year.__str__", read_only=True
     )
@@ -63,6 +68,9 @@ class SchoolYearCycleListSerializer(serializers.ModelSerializer):
         model = SchoolYearCycle
         fields = [
             "id",
+            "school_year_id",
+            "cycle_id",
+            "term_type_id",
             "school_year_display",
             "cycle_name",
             "cycle_code",
@@ -71,7 +79,7 @@ class SchoolYearCycleListSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = fields
+        read_only_fields = ["id", "created_at", "updated_at"]
 
 
 class SchoolYearCycleCreateSerializer(serializers.Serializer):

@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title|default:"Documents en masse" }}</title>
+    <link rel="stylesheet" href="{{ base_url }}{% static 'documents/css/document-base.css' %}">
+    <style>
+        /* Petite barre d'info en preview, masquée à l'impression */
+        .bulk-info {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 8mm 12mm;
+            background: var(--color-primary);
+            color: #ffffff;
+            font-size: 11pt;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .bulk-info-meta {
+            font-size: 9pt;
+            opacity: 0.85;
+        }
+        .bulk-info-actions button {
+            padding: 4px 12px;
+            background: #ffffff;
+            color: var(--color-primary);
+            border: none;
+            border-radius: 3px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 9pt;
+        }
+        @media print {
+            .bulk-info { display: none !important; }
+        }
+    </style>
+</head>
+<body class="{% if preview_mode %}preview-mode{% endif %}">
+    <div class="bulk-info no-print">
+        <div>
+            <strong>{{ title }}</strong>
+            <span class="bulk-info-meta"> · {{ count }} document{{ count|pluralize:"s" }}</span>
+        </div>
+        <div class="bulk-info-actions">
+            <button onclick="window.print()">Imprimer / Enregistrer en PDF</button>
+        </div>
+    </div>
+
+    {{ pages_html|safe }}
+</body>
+</html>

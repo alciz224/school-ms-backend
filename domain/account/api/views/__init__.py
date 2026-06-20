@@ -33,6 +33,7 @@ from .password import (
     PasswordChangeView,
     PasswordStrengthView,
 )
+from .admin_user import AdminUserViewSet
 from .security import (
     PredefinedQuestionsView,
     UserSecurityQuestionsView,
@@ -42,6 +43,8 @@ from .security import (
 )
 
 __all__ = [
+    # Admin User
+    "AdminUserViewSet",
     # Auth
     "RegisterView",
     "LoginView",

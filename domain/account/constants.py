@@ -56,6 +56,71 @@ class SecurityLevel(models.TextChoices):
     HIGH = "high", "High"
 
 
+class UserRole(models.TextChoices):
+    """User roles in the system."""
+
+    STUDENT = "student", "Student"
+    TEACHER = "teacher", "Teacher"
+    PARENT = "parent", "Parent"
+    ADMIN = "admin", "Admin"
+    SCHOOL_ADMIN = "school_admin", "School Admin"
+    SUPER_ADMIN = "super_admin", "Super Admin"
+
+
+class Gender(models.TextChoices):
+    """Genre / sexe (état civil)."""
+
+    MALE = "M", "Masculin"
+    FEMALE = "F", "Féminin"
+
+
+class DiplomaLevel(models.TextChoices):
+    """Niveau de diplôme (système éducatif guinéen)."""
+
+    BEPC = "bepc", "BEPC"
+    BAC = "bac", "Baccalauréat"
+    BTS = "bts", "BTS"
+    DUT = "dut", "DUT"
+    LICENCE = "licence", "Licence"
+    MASTER = "master", "Master"
+    DOCTORAT = "doctorat", "Doctorat"
+    AUTRE = "autre", "Autre"
+
+
+class EmploymentType(models.TextChoices):
+    """Statut d'emploi enseignant (Guinée)."""
+
+    FONCTIONNAIRE = "fonctionnaire", "Fonctionnaire"
+    CONTRACTUEL = "contractuel", "Contractuel"
+    VACATAIRE = "vacataire", "Vacataire"
+    BENEVOLE = "benevole", "Bénévole"
+
+
+class ParentRelationshipType(models.TextChoices):
+    """Type de relation parent-enfant."""
+
+    FATHER = "FATHER", "Père"
+    MOTHER = "MOTHER", "Mère"
+    GUARDIAN = "GUARDIAN", "Tuteur légal"
+    OTHER = "OTHER", "Autre"
+
+
+class SchoolAdminPosition(models.TextChoices):
+    """Poste d'un school admin dans une école."""
+
+    DIRECTOR = "director", "Directeur"
+    DEPUTY_DIRECTOR = "deputy_director", "Directeur adjoint"
+    CENSOR = "censor", "Censeur"
+    GENERAL_SECRETARY = "general_secretary", "Secrétaire général"
+    REGISTRAR = "registrar", "Surveillant général"
+    BURSAR = "bursar", "Économe"
+    OTHER = "other", "Autre"
+
+
+# Session keys
+ACTIVE_ROLE_SESSION_KEY = "active_role"
+
+
 # Predefined security questions
 PREDEFINED_SECURITY_QUESTIONS = [
     # School context

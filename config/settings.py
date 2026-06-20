@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     "domain.enrollment",
     "domain.assessment",
     "domain.scheduling",
+    "domain.finance",
+    "domain.documents",
     # Portal apps
     "portal.school_admin",
     "portal.system_admin",
@@ -77,7 +79,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -99,6 +101,15 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
+        # SQLite (dev) concurrency: WAL lets readers and a writer work
+        # concurrently, and the busy timeout makes a writer wait for the lock
+        # instead of failing immediately with "database is locked". Ignored by
+        # other engines (e.g. PostgreSQL in production).
+        "OPTIONS": {
+            "timeout": 30,
+            "transaction_mode": "IMMEDIATE",
+            "init_command": "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;",
+        },
     }
 }
 
@@ -138,6 +149,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+# Base URL utilisée par WeasyPrint pour résoudre les URLs absolues
+# des assets (CSS, polices, images) dans les documents.
+DOCUMENT_BASE_URL = "http://localhost:8000"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/6.0/ref/settings/#default-auto-field
@@ -146,6 +166,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Custom User Model
 AUTH_USER_MODEL = "account.CustomUser"
+
+# Email (console backend in dev — no SMTP server needed)
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@school-ms.com"
 
 # Authentication Backends
 AUTHENTICATION_BACKENDS = [
@@ -300,6 +324,7 @@ SPECTACULAR_SETTINGS = {
     ],
     "ENUM_NAME_OVERRIDES": {
         "AssessmentStatusEnum": "domain.assessment.constants.AssessmentStatus",
+        "AssessmentSubjectStatusEnum": "domain.assessment.constants.AssessmentSubjectStatus",
         "StudentAssessmentStatusEnum": "domain.assessment.constants.StudentAssessmentStatus",
         "AdministrativeUnitTypeEnum": "domain.geography.constants.AdministrativeUnitType",
         "VerificationTypeEnum": "domain.account.constants.VerificationType",
@@ -308,6 +333,11 @@ SPECTACULAR_SETTINGS = {
         "SchoolStatusEnum": "domain.school_operations.constants.SchoolStatus",
         "SchoolTypeEnum": "domain.school_operations.constants.SchoolType",
         "SchoolYearStatusEnum": "domain.school_operations.constants.SchoolYearStatus",
+        "SchoolYearTeacherStatusEnum": "domain.school_operations.constants.SchoolYearTeacherStatus",
+        "TimeSlotStatusEnum": "domain.school_operations.constants.TimeSlotStatus",
+        "ScheduleStatusEnum": "domain.scheduling.constants.ScheduleStatus",
+        "StudentEnrollmentStatusEnum": "domain.enrollment.constants.StudentEnrollmentStatus",
+        "TeacherAssignmentStatusEnum": "domain.enrollment.constants.TeacherAssignmentStatus",
     },
 }
 

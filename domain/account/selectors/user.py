@@ -5,9 +5,10 @@ User selectors.
 from django.db.models import QuerySet, Q, Count
 from django.utils import timezone
 from datetime import timedelta
-from typing import Optional
+from typing import Optional, List
 
 from domain.account.models import CustomUser
+from domain.account.constants import UserRole
 
 
 class UserSelector:
@@ -255,3 +256,99 @@ class UserSelector:
             "recent_users_30d": recent_users,
             "verification_rate": round((verified_users / total_users * 100) if total_users > 0 else 0, 1)
         }
+
+
+class UserRoleSelector:
+    """Selector for determining user roles based on relationships."""
+
+    @staticmethod
+    def get_available_roles(user: CustomUser) -> List[str]:
+        """
+        Détermine les rôles disponibles pour l'utilisateur, basés sur ses profils
+        et ses relations.
+
+        Logique :
+        - student     : a un StudentProfile (OneToOne) actif
+        - teacher     : a un TeacherProfile actif
+        - parent      : a un ParentProfile actif (ou ParentChild en tant que parent)
+        - admin       : a un AdminProfile actif
+        - school_admin: a un SchoolAdminProfile actif (ou is_staff=True comme fallback)
+        - super_admin : a un SuperAdminProfile OU is_superuser=True
+
+        Args:
+            user: instance CustomUser
+
+        Returns:
+            Liste des rôles disponibles
+        """
+        roles = []
+
+        # student : profil élève actif
+        student_profile = getattr(user, "student_profile", None)
+        if student_profile and not student_profile.is_deleted:
+            roles.append(UserRole.STUDENT)
+
+        # teacher : profil enseignant actif
+        teacher_profile = getattr(user, "teacher_profile", None)
+        if teacher_profile and not teacher_profile.is_deleted:
+            roles.append(UserRole.TEACHER)
+
+        # parent : profil parent actif OU relations parent-enfant existantes
+        parent_profile = getattr(user, "parent_profile", None)
+        if parent_profile and not parent_profile.is_deleted:
+            roles.append(UserRole.PARENT)
+
+        # admin (plateforme)
+        admin_profile = getattr(user, "admin_profile", None)
+        if admin_profile and not admin_profile.is_deleted:
+            roles.append(UserRole.ADMIN)
+
+        # school_admin (école) — profil ou fallback is_staff
+        school_admin_profile = getattr(user, "school_admin_profile", None)
+        if school_admin_profile and not school_admin_profile.is_deleted:
+            roles.append(UserRole.SCHOOL_ADMIN)
+        elif user.is_staff and not user.is_superuser:
+            roles.append(UserRole.SCHOOL_ADMIN)
+
+        # super_admin — profil ou superuser Django
+        super_admin_profile = getattr(user, "super_admin_profile", None)
+        has_super_profile = super_admin_profile and not super_admin_profile.is_deleted
+        if has_super_profile or user.is_superuser:
+            roles.append(UserRole.SUPER_ADMIN)
+
+        return roles
+
+    @staticmethod
+    def get_default_role(user: CustomUser) -> Optional[str]:
+        """
+        Get the default role for a user (first available in priority order).
+
+        Priority order: student > teacher > parent > admin > school_admin > super_admin
+
+        Args:
+            user: User instance
+
+        Returns:
+            Default role string or None if no roles available
+        """
+        available = UserRoleSelector.get_available_roles(user)
+
+        if not available:
+            return None
+
+        # Priority order
+        priority = [
+            UserRole.STUDENT,
+            UserRole.TEACHER,
+            UserRole.PARENT,
+            UserRole.ADMIN,
+            UserRole.SCHOOL_ADMIN,
+            UserRole.SUPER_ADMIN,
+        ]
+
+        for role in priority:
+            if role in available:
+                return role
+
+        # Fallback: return first available (should not reach here)
+        return available[0]

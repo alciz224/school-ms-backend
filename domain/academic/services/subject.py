@@ -7,13 +7,13 @@ class SubjectService:
 
     @staticmethod
     def create(*, code: str, name: str, user=None) -> Subject:
-        subject = Subject(code=code.strip(), name=name.strip(), created_by=user)
+        subject = Subject(code=code.upper().strip(), name=name.strip(), created_by=user)
         subject.save()
         return subject
 
     @staticmethod
     def update(*, subject: Subject, code: str = None, name: str = None, user=None) -> Subject:
-        if code: subject.code = code.strip()
+        if code: subject.code = code.upper().strip()
         if name: subject.name = name.strip()
         subject.updated_by = user
         subject.save()

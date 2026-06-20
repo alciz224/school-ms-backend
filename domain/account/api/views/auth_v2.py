@@ -16,10 +16,13 @@ from ..serializers.auth_v2 import (
     SessionRegisterSerializer,
     SessionLoginSerializer,
     SessionLogoutSerializer,
+    SelectRoleSerializer,
 )
 from ..serializers import UserSerializer
 from ..throttling import AuthRateThrottle, RegistrationRateThrottle
 from domain.account.services import AuthService
+from domain.account.selectors import UserRoleSelector
+from domain.account.constants import ACTIVE_ROLE_SESSION_KEY
 
 
 class SessionRegisterView(BaseAPIView):
@@ -54,12 +57,18 @@ class SessionRegisterView(BaseAPIView):
         # Log the user in (create session)
         login(request, result.user, backend="domain.account.backends.EmailPhoneBackend")
 
+        # Set default role if not already set
+        if ACTIVE_ROLE_SESSION_KEY not in request.session:
+            default_role = UserRoleSelector.get_default_role(result.user)
+            if default_role:
+                request.session[ACTIVE_ROLE_SESSION_KEY] = default_role
+
         # Get CSRF token for the response
         csrf_token = get_token(request)
 
         return self.success_response(
             data={
-                "user": UserSerializer(result.user).data,
+                "user": UserSerializer(result.user, context={'request': request}).data,
                 "csrf_token": csrf_token,
                 "requires_verification": result.requires_verification,
                 "verification_sent_to": result.verification_sent_to,
@@ -96,12 +105,18 @@ class SessionLoginView(BaseAPIView):
         # Log the user in (create session)
         login(request, result.user, backend="domain.account.backends.EmailPhoneBackend")
 
+        # Set default role if not already set
+        if ACTIVE_ROLE_SESSION_KEY not in request.session:
+            default_role = UserRoleSelector.get_default_role(result.user)
+            if default_role:
+                request.session[ACTIVE_ROLE_SESSION_KEY] = default_role
+
         # Get CSRF token for the response
         csrf_token = get_token(request)
 
         return self.success_response(
             data={
-                "user": UserSerializer(result.user).data,
+                "user": UserSerializer(result.user, context={'request': request}).data,
                 "csrf_token": csrf_token,
                 "requires_verification": result.requires_verification,
             },
@@ -138,13 +153,16 @@ class SessionStatusView(BaseAPIView):
         summary="Get session status and current user",
     )
     def get(self, request):
-        return self.success_response(
+        res = self.success_response(
             data={
-                "user": UserSerializer(request.user).data,
+                "user": UserSerializer(request.user, context={'request': request}).data,
                 "authenticated": True,
             },
             message="Session is active.",
         )
+        print(f"Response data: {res.data}")
+        print(f"Response status: {res.status_code}")
+        return res
 
 
 class CSRFTokenView(BaseAPIView):
@@ -164,4 +182,33 @@ class CSRFTokenView(BaseAPIView):
         return self.success_response(
             data={"csrf_token": csrf_token},
             message="CSRF token generated.",
+        )
+
+
+class SelectRoleView(BaseAPIView):
+    """Select active role for the current session."""
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = SelectRoleSerializer
+
+    @extend_schema(
+        tags=["Auth V2 - Session"],
+        summary="Select active role for the session",
+        description="Sets the active role for the current session. The role must be available for the user.",
+        request=SelectRoleSerializer,
+    )
+    def post(self, request):
+        serializer = self.serializer_class(
+            data=request.data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        # Store the selected role in the session
+        role = serializer.validated_data['role']
+        request.session[ACTIVE_ROLE_SESSION_KEY] = role
+
+        return self.success_response(
+            data={"role": role},
+            message="Role selected successfully."
         )

@@ -24,7 +24,7 @@ class TestAcademicYearAPI:
 
     def test_list_academic_years(self, authenticated_client, academic_year):
         """Test listing academic years."""
-        url = reverse('academic:academicyear-list')
+        url = reverse('academic:academic-year-list')
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
@@ -32,7 +32,7 @@ class TestAcademicYearAPI:
 
     def test_retrieve_academic_year(self, authenticated_client, academic_year):
         """Test retrieving a single academic year."""
-        url = reverse('academic:academicyear-detail', kwargs={'pk': academic_year.id})
+        url = reverse('academic:academic-year-detail', kwargs={'pk': academic_year.id})
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
@@ -40,7 +40,7 @@ class TestAcademicYearAPI:
 
     def test_list_requires_authentication(self, api_client):
         """Test that authentication is required."""
-        url = reverse('academic:academicyear-list')
+        url = reverse('academic:academic-year-list')
         response = api_client.get(url)
         
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
@@ -156,7 +156,7 @@ class TestAssessmentTypeAPI:
 
     def test_list_assessment_types(self, authenticated_client, assessment_type):
         """Test listing assessment types."""
-        url = reverse('academic:assessmenttype-list')
+        url = reverse('academic:assessment-type-list')
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
@@ -164,7 +164,7 @@ class TestAssessmentTypeAPI:
 
     def test_retrieve_assessment_type(self, authenticated_client, assessment_type):
         """Test retrieving a single assessment type."""
-        url = reverse('academic:assessmenttype-detail', kwargs={'pk': assessment_type.id})
+        url = reverse('academic:assessment-type-detail', kwargs={'pk': assessment_type.id})
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
@@ -177,7 +177,7 @@ class TestTermTypeAPI:
 
     def test_list_term_types(self, authenticated_client, term_type):
         """Test listing term types."""
-        url = reverse('academic:termtype-list')
+        url = reverse('academic:term-type-list')
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK
@@ -185,7 +185,7 @@ class TestTermTypeAPI:
 
     def test_retrieve_term_type(self, authenticated_client, term_type):
         """Test retrieving a single term type."""
-        url = reverse('academic:termtype-detail', kwargs={'pk': term_type.id})
+        url = reverse('academic:term-type-detail', kwargs={'pk': term_type.id})
         response = authenticated_client.get(url)
         
         assert response.status_code == status.HTTP_200_OK

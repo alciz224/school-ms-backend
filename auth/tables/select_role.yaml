@@ -1,0 +1,198 @@
+openapi: 3.0.3
+info:
+  title: Auth - Select Role
+  version: "1.0"
+  description: |
+    Set the active role for the current authenticated session.
+
+    Notes:
+    - A user may have multiple available roles (`available_roles`), but only one active role per session.
+    - The backend must validate the requested role is in `available_roles`.
+    - The active role should be stored server-side (e.g., session) and reflected by `/api/v2/auth/me/`.
+
+servers:
+  - url: https://api.example.com
+
+paths:
+  /api/v2/auth/select-role/:
+    post:
+      operationId: auth_select_role
+      summary: Select active role for the session
+      description: Sets the active role for the current session.
+      tags:
+        - Auth
+      security:
+        - cookieAuth: []
+        - csrfAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - role
+              properties:
+                role:
+                  type: string
+                  description: Role to activate for this session.
+                  enum:
+                    - student
+                    - teacher
+                    - parent
+                    - admin
+                    - school_admin
+                    - super_admin
+            examples:
+              schoolAdmin:
+                summary: Activate school admin portal
+                value:
+                  role: school_admin
+      responses:
+        "200":
+          description: Role selected successfully
+          headers:
+            Set-Cookie:
+              description: Updated session cookie (if applicable)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - message
+                  - data
+                properties:
+                  success:
+                    type: boolean
+                    enum: [true]
+                  message:
+                    type: string
+                    example: Role selected successfully.
+                  data:
+                    type: object
+                    additionalProperties: false
+                    required:
+                      - role
+                    properties:
+                      role:
+                        type: string
+                        description: The active role after selection.
+                        enum:
+                          - student
+                          - teacher
+                          - parent
+                          - admin
+                          - school_admin
+                          - super_admin
+              examples:
+                ok:
+                  value:
+                    success: true
+                    message: Role selected successfully.
+                    data:
+                      role: school_admin
+
+        "400":
+          description: Invalid request (e.g., missing/invalid role)
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - message
+                  - error
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  message:
+                    type: string
+                    example: Invalid request.
+                  error:
+                    type: object
+                    additionalProperties: true
+              examples:
+                invalidRole:
+                  value:
+                    success: false
+                    message: Invalid role.
+                    error:
+                      code: invalid_role
+                      details:
+                        role:
+                          - "Role must be one of: student, teacher, parent, admin, school_admin, super_admin"
+
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - message
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  message:
+                    type: string
+                    example: Authentication required.
+              examples:
+                notAuthenticated:
+                  value:
+                    success: false
+                    message: Authentication required.
+
+        "403":
+          description: Role is not permitted for this user
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                  - success
+                  - message
+                  - error
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  message:
+                    type: string
+                    example: Role not allowed.
+                  error:
+                    type: object
+                    additionalProperties: true
+              examples:
+                notAllowed:
+                  value:
+                    success: false
+                    message: Role not allowed.
+                    error:
+                      code: role_not_allowed
+                      details:
+                        role:
+                          - "You do not have access to this role"
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+      description: Session cookie (example name; adjust to your backend)
+    csrfAuth:
+      type: apiKey
+      in: header
+      name: X-CSRFToken
+      description: CSRF token header for state-changing requests

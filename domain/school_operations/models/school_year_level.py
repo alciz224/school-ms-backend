@@ -120,20 +120,20 @@ class SchoolYearLevel(AuditModel):
         """
         Check if the level can be deleted.
 
+        A level cannot be removed while it still has non-deleted classrooms,
+        subjects, or student enrollments attached.
+
         Returns:
             bool: True if can be deleted, False otherwise
         """
-        # Check if there are associated classrooms (when implemented)
-        # if self.classrooms.exists():
-        #     return False
+        if self.classrooms.filter(is_deleted=False).exists():
+            return False
 
-        # Check if there are associated subjects (when implemented)
-        # if self.subjects.exists():
-        #     return False
+        if self.level_subjects.filter(is_deleted=False).exists():
+            return False
 
-        # Check if there are associated enrollments (when implemented)
-        # if self.enrollments.exists():
-        #     return False
+        if self.student_enrollments.filter(is_deleted=False).exists():
+            return False
 
         return True
 

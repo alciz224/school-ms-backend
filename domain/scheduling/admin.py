@@ -28,8 +28,8 @@ class ScheduleAdmin(admin.ModelAdmin):
     ]
     search_fields = [
         "classroom__name",
-        "teacher_assignment__school_year_teacher__teacher__first_name",
-        "teacher_assignment__school_year_teacher__teacher__last_name",
+        "teacher_assignment__school_year_teacher__teacher__user__first_name",
+        "teacher_assignment__school_year_teacher__teacher__user__last_name",
         "teacher_assignment__school_year_level_subject__subject__name",
     ]
     readonly_fields = ["created_at", "updated_at"]

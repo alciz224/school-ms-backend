@@ -3,7 +3,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from domain.account.models import CustomUser
+from domain.account.models import StudentProfile
 from domain.enrollment.models.classroom import Classroom
 from domain.enrollment.models.constants import StudentEnrollmentStatus
 from domain.school_operations.models import SchoolYearLevel
@@ -24,15 +24,16 @@ class StudentEnrollment(AuditModel):
     - Date coherence: start_date >= enrollment_date; end_date >= start_date.
     """
 
-    # Optional: some students do not have a platform account.
+    # Optional: a student can have an enrollment without a permanent StudentProfile
+    # (e.g., quick pre-registration). The snapshot fields below cover this case.
     student = models.ForeignKey(
-        CustomUser,
+        StudentProfile,
         on_delete=models.PROTECT,
         related_name="student_enrollments",
         null=True,
         blank=True,
     )
-    # Snapshot identity for non-account students and for historical consistency.
+    # Snapshot identity at enrollment time (preserves history if profile is renamed).
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
 

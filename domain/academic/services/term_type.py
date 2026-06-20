@@ -7,13 +7,13 @@ class TermTypeService:
 
     @staticmethod
     def create(*, code: str, name: str, period_count: int, user=None) -> TermType:
-        term_type = TermType(code=code.strip(), name=name.strip(), period_count=period_count, created_by=user)
+        term_type = TermType(code=code.upper().strip(), name=name.strip(), period_count=period_count, created_by=user)
         term_type.save()
         return term_type
 
     @staticmethod
     def update(*, term_type: TermType, code: str = None, name: str = None, period_count: int = None, user=None) -> TermType:
-        if code: term_type.code = code.strip()
+        if code: term_type.code = code.upper().strip()
         if name: term_type.name = name.strip()
         if period_count is not None: term_type.period_count = period_count
         term_type.updated_by = user

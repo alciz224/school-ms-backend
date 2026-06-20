@@ -32,10 +32,10 @@ class TestAcademicYearService:
         """Test updating an academic year."""
         updated = AcademicYearService.update(
             academic_year=academic_year,
-            status="COMPLETED",
+            status="ARCHIVED",
             user=user,
         )
-        assert updated.status == "COMPLETED"
+        assert updated.status == "ARCHIVED"
         assert updated.updated_by == user
 
     def test_delete_academic_year(self, academic_year, user):
@@ -215,11 +215,11 @@ class TestTermTypeService:
         term_type = TermTypeService.create(
             code="trim",
             name="Trimestre",
-            number_of_terms=3,
+            period_count=3,
             user=user,
         )
         assert term_type.code == "TRIM"
-        assert term_type.number_of_terms == 3
+        assert term_type.period_count == 3
 
     def test_update_term_type(self, term_type, user):
         """Test updating a term type."""

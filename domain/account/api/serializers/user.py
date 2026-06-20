@@ -7,6 +7,8 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 from domain.account.validators import validate_phone_number
+from domain.account.constants import ACTIVE_ROLE_SESSION_KEY
+from domain.account.selectors import UserRoleSelector
 
 User = get_user_model()
 
@@ -16,6 +18,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     full_name = serializers.CharField(read_only=True)
     security = serializers.SerializerMethodField()
+    available_roles = serializers.SerializerMethodField()
+    active_role = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -29,6 +33,8 @@ class UserSerializer(serializers.ModelSerializer):
             "is_verified",
             "is_active",
             "security",
+            "available_roles",
+            "active_role",
         ]
         read_only_fields = fields
 
@@ -38,6 +44,17 @@ class UserSerializer(serializers.ModelSerializer):
             "score": obj.security_score,
             "level": obj.security_level,
         }
+
+    def get_available_roles(self, obj):
+        """Return list of available roles for the user."""
+        return UserRoleSelector.get_available_roles(obj)
+
+    def get_active_role(self, obj):
+        """Return the active role from session."""
+        request = self.context.get('request')
+        if request and hasattr(request, 'session'):
+            return request.session.get(ACTIVE_ROLE_SESSION_KEY)
+        return None
 
 
 class UserDetailSerializer(serializers.ModelSerializer):

@@ -7,13 +7,13 @@ class TrackService:
 
     @staticmethod
     def create(*, code: str, name: str, cycle, user=None) -> Track:
-        track = Track(code=code.strip(), name=name.strip(), cycle=cycle, created_by=user)
+        track = Track(code=code.upper().strip(), name=name.strip(), cycle=cycle, created_by=user)
         track.save()
         return track
 
     @staticmethod
     def update(*, track: Track, code: str = None, name: str = None, user=None) -> Track:
-        if code: track.code = code.strip()
+        if code: track.code = code.upper().strip()
         if name: track.name = name.strip()
         track.updated_by = user
         track.save()

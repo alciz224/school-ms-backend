@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from domain.account.models import CustomUser
 from domain.school_operations.models.school_year_level import SchoolYearLevel
+from domain.shared.exceptions import BusinessRuleException
 
 
 class SchoolYearLevelService:
@@ -125,8 +126,10 @@ class SchoolYearLevelService:
         """
         # Check if can be deleted
         if not school_year_level.can_delete():
-            raise ValidationError(
-                "Cannot delete level configuration with associated classrooms, subjects, or enrollments"
+            raise BusinessRuleException(
+                message="Ce niveau contient des classes, matières ou inscriptions et ne peut pas être retiré.",
+                code="school_year_level_in_use",
+                rule="school_year_level_can_delete",
             )
 
         school_year_level.is_deleted = True

@@ -1,0 +1,51 @@
+{% extends "documents/base/_document_base.html" %}
+
+{% block title %}Attestation — {{ student_full_name }}{% endblock %}
+
+{% block content %}
+<div class="document-page attestation">
+
+    <div class="watermark">{{ school.name }}</div>
+
+    {% include "documents/components/_header.html" %}
+
+    <div class="document-title">Attestation de scolarité</div>
+
+    <div class="attestation-body">
+        <p>
+            Je soussigné(e),
+            <strong>{{ director_name }}</strong>,
+            {{ director_title }} de
+            <strong>{{ school.name }}</strong>,
+            atteste que :
+        </p>
+
+        <p class="student-highlight">{{ student_full_name }}</p>
+
+        <p>
+            Né{{ gender_suffix }}
+            le <strong>{{ date_of_birth|date:"d/m/Y" }}</strong>
+            {% if place_of_birth %}à <strong>{{ place_of_birth }}</strong>{% endif %},
+            matricule <strong>{{ annual_identifier }}</strong>,
+        </p>
+
+        <p>
+            est régulièrement inscrit{{ gender_suffix }}
+            en classe de <strong>{{ classroom_name }}</strong>
+            ({{ level_name }}{% if track_name %} — {{ track_name }}{% endif %})
+            au titre de l'année scolaire
+            <strong>{{ academic_year_code }}</strong>
+            à {{ school.name }}.
+        </p>
+
+        <p style="margin-top: 10mm;">
+            La présente attestation est délivrée à l'intéressé{{ gender_suffix }}
+            pour servir et valoir ce que de droit.
+        </p>
+    </div>
+
+    {% include "documents/components/_signatures.html" %}
+
+    {% include "documents/components/_footer.html" %}
+</div>
+{% endblock %}

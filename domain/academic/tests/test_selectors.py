@@ -100,7 +100,7 @@ class TestTrackSelector:
             updated_by=user,
         )
         
-        tracks = TrackSelector.get_all(cycle_id=track.cycle.id)
+        tracks = TrackSelector.for_cycle(cycle=track.cycle)
         assert tracks.count() == 2
 
     def test_get_by_id(self, track):
@@ -131,7 +131,7 @@ class TestLevelSelector:
             updated_by=user,
         )
         
-        levels = LevelSelector.get_all(cycle_id=level.cycle.id)
+        levels = LevelSelector.for_cycle(cycle=level.cycle)
         assert levels.count() == 2
 
     def test_list_by_track(self, cycle_with_track, track, user):
@@ -156,7 +156,7 @@ class TestLevelSelector:
             updated_by=user,
         )
         
-        levels = LevelSelector.get_all(track_id=track.id)
+        levels = LevelSelector.for_track(track=track)
         assert levels.count() == 2
 
     def test_get_by_id(self, level):

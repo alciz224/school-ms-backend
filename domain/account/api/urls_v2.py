@@ -13,6 +13,7 @@ from .views.auth_v2 import (
     SessionLogoutView,
     SessionStatusView,
     CSRFTokenView,
+    SelectRoleView,
 )
 
 app_name = "account_v2"
@@ -26,4 +27,5 @@ urlpatterns = [
     path("logout/", SessionLogoutView.as_view(), name="logout"),
     path("status/", SessionStatusView.as_view(), name="status"),
     path("csrf/", CSRFTokenView.as_view(), name="csrf"),
+    path("select-role/", SelectRoleView.as_view(), name="select_role"),
 ]

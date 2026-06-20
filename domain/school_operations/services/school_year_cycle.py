@@ -6,6 +6,7 @@ from django.db import transaction
 
 from domain.account.models import CustomUser
 from domain.school_operations.models.school_year_cycle import SchoolYearCycle
+from domain.shared.exceptions import BusinessRuleException
 
 
 class SchoolYearCycleService:
@@ -120,8 +121,10 @@ class SchoolYearCycleService:
         """
         # Check if can be deleted
         if not school_year_cycle.can_delete():
-            raise ValidationError(
-                "Cannot delete cycle configuration with associated levels or assessments"
+            raise BusinessRuleException(
+                message="Ce cycle est utilisé par des niveaux ou années scolaires et ne peut pas être retiré.",
+                code="school_year_cycle_in_use",
+                rule="school_year_cycle_can_delete",
             )
 
         from django.utils import timezone

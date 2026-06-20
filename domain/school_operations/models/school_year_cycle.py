@@ -88,16 +88,14 @@ class SchoolYearCycle(AuditModel):
         """
         Check if the cycle can be deleted.
 
+        A cycle cannot be removed while non-deleted levels are still attached
+        to it (those levels must be removed first).
+
         Returns:
             bool: True if can be deleted, False otherwise
         """
-        # Check if there are associated levels (when implemented)
-        # if self.levels.exists():
-        #     return False
-
-        # Check if there are associated assessments (when implemented)
-        # if self.assessments.exists():
-        #     return False
+        if self.levels.filter(is_deleted=False).exists():
+            return False
 
         return True
 

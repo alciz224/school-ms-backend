@@ -1,0 +1,124 @@
+{% extends "documents/base/_document_base.html" %}
+
+{% block title %}Relevé annuel — {{ student_full_name }}{% endblock %}
+
+{% block content %}
+<div class="document-page transcript">
+
+    <div class="watermark">{{ school.name }}</div>
+
+    {% include "documents/components/_header.html" %}
+
+    <div class="document-title">
+        Relevé de notes annuel — {{ academic_year_code }}
+    </div>
+
+    <div class="student-info">
+        <div class="info-item">
+            <span class="info-label">Nom & Prénom :</span>
+            <span class="info-value">{{ student_full_name }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Matricule :</span>
+            <span class="info-value">{{ annual_identifier }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Classe :</span>
+            <span class="info-value">{{ classroom_name }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Niveau :</span>
+            <span class="info-value">{{ level_name }}{% if track_name %} — {{ track_name }}{% endif %}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Cycle :</span>
+            <span class="info-value">{{ cycle_name }}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Année scolaire :</span>
+            <span class="info-value">{{ academic_year_code }}</span>
+        </div>
+    </div>
+
+    {# Tableau récapitulatif : moyenne par période #}
+    <table class="grades-table">
+        <thead>
+            <tr>
+                <th class="subject-col">Période</th>
+                <th>Moyenne / 20</th>
+                <th>Rang</th>
+                <th>Décision</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in term_rows %}
+            <tr>
+                <td class="subject-cell">{{ row.term_label }}</td>
+                <td>
+                    <span class="grade-value {{ row.css_class }}">
+                        {{ row.average|default_if_none:"—" }}
+                    </span>
+                </td>
+                <td>
+                    {% if row.rank %}
+                        {{ row.rank }} / {{ row.class_size }}
+                    {% else %}—{% endif %}
+                </td>
+                <td style="text-align: left;">{{ row.decision|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 8mm; color: var(--color-text-secondary); font-style: italic;">
+                    Aucun bulletin enregistré pour cette année scolaire.
+                </td>
+            </tr>
+            {% endfor %}
+
+            {% if term_rows %}
+            <tr class="total-row">
+                <td class="text-right"><strong>MOYENNE ANNUELLE</strong></td>
+                <td><strong>{{ annual_average|default_if_none:"—" }}</strong></td>
+                <td></td>
+                <td></td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div class="summary-section no-break">
+        <div class="summary-box">
+            <div class="box-title">Résultats annuels</div>
+            <div class="summary-item highlight">
+                <span class="label">Moyenne annuelle</span>
+                <span class="value">{{ annual_average|default_if_none:"—" }} / 20</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Périodes prises en compte</span>
+                <span class="value">{{ term_rows|length }}</span>
+            </div>
+        </div>
+        <div class="summary-box">
+            <div class="box-title">Mention</div>
+            <div class="summary-item highlight">
+                <span class="label">Mention</span>
+                <span class="value">{{ mention|default:"—" }}</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Année scolaire</span>
+                <span class="value">{{ academic_year_code }}</span>
+            </div>
+        </div>
+    </div>
+
+    {% if decision %}
+    <div class="decision-section no-break">
+        <div class="decision-label">Décision de fin d'année</div>
+        <div class="decision-value">{{ decision }}</div>
+    </div>
+    {% endif %}
+
+    {% include "documents/components/_signatures.html" %}
+
+    {% include "documents/components/_footer.html" %}
+</div>
+{% endblock %}

@@ -52,3 +52,18 @@ class Classroom(AuditModel):
     def save(self, *args, **kwargs):
         self.full_clean()
         return super().save(*args, **kwargs)
+
+    def can_delete(self):
+        """
+        Check if the classroom can be deleted.
+
+        A classroom cannot be removed while non-deleted student enrollments
+        reference it.
+
+        Returns:
+            bool: True if can be deleted, False otherwise
+        """
+        if self.student_enrollments.filter(is_deleted=False).exists():
+            return False
+
+        return True

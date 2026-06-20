@@ -6,7 +6,16 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
-from .models import School, SchoolYear, SchoolYearCycle, SchoolYearLevel
+from .models import (
+    School,
+    SchoolYear,
+    SchoolYearCycle,
+    SchoolYearCycleTerm,
+    SchoolYearCycleTimeSlot,
+    SchoolYearLevel,
+    SchoolYearLevelSubject,
+    SchoolYearTeacher,
+)
 from .constants import SchoolStatus, SchoolYearStatus
 
 
@@ -110,7 +119,7 @@ class SchoolAdmin(admin.ModelAdmin):
         })
     )
     
-    raw_id_fields = ['locality', 'director', 'registrar']
+    autocomplete_fields = ['locality', 'director', 'registrar']
     
     actions = ['activate_schools', 'suspend_schools', 'make_active']
     
@@ -311,7 +320,7 @@ class SchoolYearAdmin(admin.ModelAdmin):
         })
     )
     
-    raw_id_fields = ['school', 'academic_year']
+    autocomplete_fields = ['school', 'academic_year']
     
     actions = [
         'activate_school_years',
@@ -631,7 +640,7 @@ class SchoolYearCycleAdmin(admin.ModelAdmin):
         })
     )
     
-    raw_id_fields = ['school_year', 'cycle', 'term_type']
+    autocomplete_fields = ['school_year', 'cycle', 'term_type']
     
     actions = ['make_active']
     
@@ -731,6 +740,20 @@ class SchoolYearCycleAdmin(admin.ModelAdmin):
                 obj.save()
 
 
+@admin.register(SchoolYearTeacher)
+class SchoolYearTeacherAdmin(admin.ModelAdmin):
+    list_display = ("id", "school_year", "teacher", "status", "hire_date", "end_date", "is_active")
+    list_filter = ("status", "is_active", "school_year")
+    search_fields = (
+        "teacher__user__email",
+        "teacher__user__first_name",
+        "teacher__user__last_name",
+        "school_year__name",
+    )
+    autocomplete_fields = ("school_year", "teacher")
+    ordering = ("-school_year__start_date", "teacher__user__last_name")
+
+
 @admin.register(SchoolYearLevel)
 class SchoolYearLevelAdmin(admin.ModelAdmin):
     """Admin interface for SchoolYearLevel model."""
@@ -797,7 +820,7 @@ class SchoolYearLevelAdmin(admin.ModelAdmin):
         })
     )
     
-    raw_id_fields = ['school_year_cycle', 'level', 'track']
+    autocomplete_fields = ['school_year_cycle', 'level', 'track']
     
     actions = ['make_active']
     
@@ -906,7 +929,7 @@ class SchoolYearLevelAdmin(admin.ModelAdmin):
                 _('Impossible de supprimer ce niveau car il a des classes ou matières associées.'),
                 level='error'
             )
-    
+
     def delete_queryset(self, request, queryset):
         """Perform bulk soft delete."""
         for obj in queryset:
@@ -914,3 +937,110 @@ class SchoolYearLevelAdmin(admin.ModelAdmin):
                 obj.is_deleted = True
                 obj.deleted_by = request.user
                 obj.save()
+
+
+@admin.register(SchoolYearCycleTerm)
+class SchoolYearCycleTermAdmin(admin.ModelAdmin):
+    """Admin interface for SchoolYearCycleTerm model."""
+
+    list_display = [
+        "id",
+        "school_year_cycle",
+        "term",
+        "start_date",
+        "end_date",
+        "is_active",
+    ]
+    list_filter = [
+        "term",
+        "school_year_cycle__school_year",
+        "school_year_cycle__cycle",
+        "is_active",
+    ]
+    search_fields = [
+        "school_year_cycle__school_year__name",
+        "school_year_cycle__school_year__school__name",
+        "term__name",
+    ]
+    autocomplete_fields = ["school_year_cycle", "term"]
+    ordering = ["school_year_cycle", "term__order"]
+    readonly_fields = ["created_at", "updated_at"]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            "school_year_cycle__school_year__school",
+            "school_year_cycle__cycle",
+            "term",
+        )
+
+
+@admin.register(SchoolYearCycleTimeSlot)
+class SchoolYearCycleTimeSlotAdmin(admin.ModelAdmin):
+    """Admin interface for SchoolYearCycleTimeSlot model."""
+
+    list_display = [
+        "id",
+        "school_year_cycle",
+        "name",
+        "start_time",
+        "end_time",
+        "order",
+        "status",
+        "is_active",
+    ]
+    list_filter = [
+        "status",
+        "school_year_cycle__school_year",
+        "school_year_cycle__cycle",
+        "is_active",
+    ]
+    search_fields = [
+        "name",
+        "school_year_cycle__school_year__name",
+        "school_year_cycle__school_year__school__name",
+    ]
+    autocomplete_fields = ["school_year_cycle"]
+    ordering = ["school_year_cycle", "order", "start_time"]
+    readonly_fields = ["created_at", "updated_at"]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            "school_year_cycle__school_year__school",
+            "school_year_cycle__cycle",
+        )
+
+
+@admin.register(SchoolYearLevelSubject)
+class SchoolYearLevelSubjectAdmin(admin.ModelAdmin):
+    """Admin interface for SchoolYearLevelSubject model."""
+
+    list_display = [
+        "id",
+        "school_year_level",
+        "subject",
+        "coefficient",
+        "is_active",
+    ]
+    list_filter = [
+        "school_year_level__school_year_cycle__school_year",
+        "school_year_level__school_year_cycle__cycle",
+        "school_year_level__level",
+        "is_active",
+    ]
+    search_fields = [
+        "subject__name",
+        "school_year_level__school_year_cycle__school_year__name",
+        "school_year_level__school_year_cycle__school_year__school__name",
+        "school_year_level__level__name",
+    ]
+    autocomplete_fields = ["school_year_level", "subject"]
+    ordering = ["school_year_level", "subject__name"]
+    readonly_fields = ["created_at", "updated_at"]
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related(
+            "school_year_level__school_year_cycle__school_year__school",
+            "school_year_level__school_year_cycle__cycle",
+            "school_year_level__level",
+            "subject",
+        )

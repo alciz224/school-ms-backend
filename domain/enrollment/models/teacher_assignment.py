@@ -105,7 +105,8 @@ class TeacherAssignment(AuditModel):
     def __str__(self) -> str:
         subject_name = self.school_year_level_subject.subject.name
         classroom_name = self.classroom.name
-        teacher_name = f"{self.school_year_teacher.teacher.first_name} {self.school_year_teacher.teacher.last_name}"
+        teacher_user = self.school_year_teacher.teacher.user
+        teacher_name = f"{teacher_user.first_name} {teacher_user.last_name}"
         return f"{teacher_name} → {subject_name} ({classroom_name}) [{self.assignment_status}]"
 
     def clean(self):

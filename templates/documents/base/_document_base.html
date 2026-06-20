@@ -1,0 +1,13 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Document{% endblock %}</title>
+    <link rel="stylesheet" href="{{ base_url }}{% static 'documents/css/document-base.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% if preview_mode %}preview-mode{% endif %}">
+    {% block content %}{% endblock %}
+</body>
+</html>

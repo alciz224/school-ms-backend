@@ -1,0 +1,23 @@
+<header class="document-header no-break">
+    <div class="header-left">
+        <div class="institution-line">Ministère de l'Enseignement Pré-Universitaire et de l'Alphabétisation</div>
+        <div class="school-name">{{ school.name }}</div>
+        <div class="school-details">
+            {% if school.address %}{{ school.address }}{% endif %}
+            {% if school.phone %}<br>Tél : {{ school.phone }}{% endif %}
+            {% if school.email %}<br>{{ school.email }}{% endif %}
+        </div>
+    </div>
+    <div class="header-center">
+        {% if school.logo %}
+            <img src="{{ base_url }}{{ school.logo.url }}" alt="Logo" class="logo">
+        {% else %}
+            <div class="logo-placeholder">LOGO</div>
+        {% endif %}
+    </div>
+    <div class="header-right">
+        <div class="country-name">République de Guinée</div>
+        <div class="country-motto">Travail – Justice – Solidarité</div>
+        <div class="academic-year">{{ academic_year_code }}</div>
+    </div>
+</header>

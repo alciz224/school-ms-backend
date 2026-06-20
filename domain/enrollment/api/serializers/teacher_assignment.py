@@ -5,10 +5,10 @@ from domain.enrollment.models import TeacherAssignment
 
 class TeacherAssignmentSerializer(serializers.ModelSerializer):
     teacher_name = serializers.CharField(
-        source="school_year_teacher.teacher.get_full_name", read_only=True
+        source="school_year_teacher.teacher.full_name", read_only=True
     )
     teacher_email = serializers.EmailField(
-        source="school_year_teacher.teacher.email", read_only=True
+        source="school_year_teacher.teacher.user.email", read_only=True
     )
     classroom_name = serializers.CharField(source="classroom.name", read_only=True)
     subject_name = serializers.CharField(

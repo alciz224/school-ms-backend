@@ -70,3 +70,18 @@ class SchoolYearLevelSubject(AuditModel):
     def save(self, *args, **kwargs):
         self.full_clean()
         return super().save(*args, **kwargs)
+
+    def can_delete(self):
+        """
+        Check if the subject assignment can be deleted.
+
+        A subject cannot be removed from a level while non-deleted assessment
+        subjects (and therefore potential grades) reference it.
+
+        Returns:
+            bool: True if can be deleted, False otherwise
+        """
+        if self.assessment_subjects.filter(is_deleted=False).exists():
+            return False
+
+        return True

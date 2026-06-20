@@ -1,6 +1,7 @@
 """Schedule serializers."""
 
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field, inline_serializer
 
 from domain.scheduling.models import Schedule
 from domain.scheduling.constants import DayOfWeek, ScheduleStatus
@@ -41,12 +42,14 @@ class ScheduleSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
     
-    def get_teacher_name(self, obj):
+    @extend_schema_field(serializers.CharField())
+    def get_teacher_name(self, obj) -> str:
         """Get teacher full name."""
         teacher = obj.teacher
         return f"{teacher.first_name} {teacher.last_name}"
     
-    def get_time_slot_display(self, obj):
+    @extend_schema_field(serializers.CharField())
+    def get_time_slot_display(self, obj) -> str:
         """Get time slot display string."""
         return f"{obj.time_slot.start_time.strftime('%H:%M')}-{obj.time_slot.end_time.strftime('%H:%M')}"
 
@@ -86,6 +89,14 @@ class ScheduleDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'is_active', 'is_archived', 'created_at', 'updated_at']
     
+    @extend_schema_field(inline_serializer(
+        name='ClassroomInfo',
+        fields={
+            'id': serializers.IntegerField(),
+            'name': serializers.CharField(),
+            'capacity': serializers.IntegerField(),
+        }
+    ))
     def get_classroom(self, obj):
         """Get classroom details."""
         return {
@@ -94,6 +105,15 @@ class ScheduleDetailSerializer(serializers.ModelSerializer):
             'capacity': obj.classroom.capacity,
         }
     
+    @extend_schema_field(inline_serializer(
+        name='TeacherInfo',
+        fields={
+            'id': serializers.IntegerField(),
+            'first_name': serializers.CharField(),
+            'last_name': serializers.CharField(),
+            'email': serializers.EmailField(),
+        }
+    ))
     def get_teacher(self, obj):
         """Get teacher details."""
         teacher = obj.teacher
@@ -104,6 +124,14 @@ class ScheduleDetailSerializer(serializers.ModelSerializer):
             'email': teacher.email,
         }
     
+    @extend_schema_field(inline_serializer(
+        name='SubjectInfo',
+        fields={
+            'id': serializers.IntegerField(),
+            'name': serializers.CharField(),
+            'code': serializers.CharField(),
+        }
+    ))
     def get_subject(self, obj):
         """Get subject details."""
         subject = obj.subject
@@ -113,6 +141,16 @@ class ScheduleDetailSerializer(serializers.ModelSerializer):
             'code': subject.code,
         }
     
+    @extend_schema_field(inline_serializer(
+        name='TimeSlotInfo',
+        fields={
+            'id': serializers.IntegerField(),
+            'name': serializers.CharField(),
+            'start_time': serializers.CharField(),
+            'end_time': serializers.CharField(),
+            'order': serializers.IntegerField(),
+        }
+    ))
     def get_time_slot_info(self, obj):
         """Get time slot details."""
         time_slot = obj.time_slot

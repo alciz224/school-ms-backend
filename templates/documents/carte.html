@@ -1,0 +1,67 @@
+{% extends "documents/base/_document_base.html" %}
+
+{% block title %}Carte scolaire — {{ student_full_name }}{% endblock %}
+
+{% block content %}
+<div class="document-page carte">
+
+    <div class="watermark">{{ school.name }}</div>
+
+    {% include "documents/components/_header.html" %}
+
+    <div class="document-title">Carte scolaire — {{ academic_year_code }}</div>
+
+    <div class="carte-card no-break">
+        <div class="carte-photo-section">
+            {% if photo_url %}
+                <img src="{{ photo_url }}" alt="Photo" class="carte-photo">
+            {% else %}
+                <div class="carte-photo-placeholder">PHOTO</div>
+            {% endif %}
+            <div class="carte-matricule">{{ annual_identifier }}</div>
+        </div>
+
+        <div class="carte-info">
+            <div class="carte-school">{{ school.name }}</div>
+            <div class="carte-card-title">CARTE SCOLAIRE</div>
+
+            <div class="carte-row">
+                <span class="carte-label">Nom complet</span>
+                <span class="carte-value">{{ student_full_name }}</span>
+            </div>
+            <div class="carte-row">
+                <span class="carte-label">Date de naissance</span>
+                <span class="carte-value">
+                    {% if date_of_birth %}{{ date_of_birth|date:"d/m/Y" }}{% else %}—{% endif %}
+                    {% if place_of_birth %} à {{ place_of_birth }}{% endif %}
+                </span>
+            </div>
+            <div class="carte-row">
+                <span class="carte-label">Sexe</span>
+                <span class="carte-value">{{ gender_display }}</span>
+            </div>
+            <div class="carte-row">
+                <span class="carte-label">Classe</span>
+                <span class="carte-value">{{ classroom_name }} — {{ level_name }}</span>
+            </div>
+            <div class="carte-row">
+                <span class="carte-label">Cycle</span>
+                <span class="carte-value">{{ cycle_name }}{% if track_name %} ({{ track_name }}){% endif %}</span>
+            </div>
+            <div class="carte-row">
+                <span class="carte-label">Année scolaire</span>
+                <span class="carte-value">{{ academic_year_code }}</span>
+            </div>
+
+            <div class="carte-validity">
+                Valable du <strong>{{ valid_from|date:"d/m/Y" }}</strong>
+                au <strong>{{ valid_to|date:"d/m/Y" }}</strong>
+            </div>
+        </div>
+    </div>
+
+    {% include "documents/components/_signatures.html" %}
+
+    {% include "documents/components/_footer.html" %}
+</div>
+{% endblock %}

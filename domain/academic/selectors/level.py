@@ -54,7 +54,7 @@ class LevelSelector:
             QuerySet of levels for the cycle
         """
         manager = Level.all_objects if include_deleted else Level.objects
-        return manager.for_cycle(cycle).order_by('order')
+        return manager.filter(cycle=cycle).order_by('order')
 
     @staticmethod
     def for_track(*, track: Track, include_deleted: bool = False) -> QuerySet[Level]:
@@ -69,7 +69,7 @@ class LevelSelector:
             QuerySet of levels for the track
         """
         manager = Level.all_objects if include_deleted else Level.objects
-        return manager.for_track(track).order_by('order')
+        return manager.filter(track=track).order_by('order')
 
     @staticmethod
     def for_cycle_and_track(*, cycle: Cycle, track: Track = None, 

@@ -64,7 +64,7 @@ class CycleSelector:
         Returns:
             QuerySet of cycles with has_track=True
         """
-        return Cycle.objects.with_tracks()
+        return Cycle.objects.filter(has_track=True)
 
     @staticmethod
     def without_tracks() -> QuerySet[Cycle]:
@@ -74,7 +74,7 @@ class CycleSelector:
         Returns:
             QuerySet of cycles with has_track=False
         """
-        return Cycle.objects.without_tracks()
+        return Cycle.objects.filter(has_track=False)
 
     @staticmethod
     def search(*, query: str, include_deleted: bool = False) -> QuerySet[Cycle]:

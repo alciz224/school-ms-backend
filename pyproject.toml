@@ -12,6 +12,8 @@ dependencies = [
     "djangorestframework-simplejwt>=5.5.1",
     "drf-spectacular>=0.29.0",
     "phonenumbers>=9.0.22",
+    "pillow>=12.2.0",
+    "weasyprint>=69.0",
 ]
 
 [dependency-groups]
